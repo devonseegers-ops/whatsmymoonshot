@@ -1017,10 +1017,10 @@ function CelebrationScreen({ go, journey }) {
         <div className="card afu" style={{padding:28,background:"radial-gradient(ellipse at bottom,rgba(157,78,221,.1) 0%,transparent 70%)",borderColor:"rgba(157,78,221,.2)",textAlign:"center",animationDelay:".15s"}}>
           <div style={{fontSize:30,marginBottom:10}}>🌍</div>
           <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(18px,4vw,24px)",fontWeight:700,marginBottom:10}}>
-            The world needs <span className="grad">more moonshots.</span>
+            The Second Renaissance needs <span className="grad">your moonshot.</span>
           </h3>
           <p style={{color:"var(--mt)",fontSize:14,lineHeight:1.68,marginBottom:20,maxWidth:400,margin:"0 auto 20px"}}>
-            Dare your friends and colleagues to discover theirs. Share your statement and challenge them to go further.
+            Every Renaissance was built by people who dared to name what they were here to create. Share yours and challenge them to do the same.
           </p>
           <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",marginBottom:12}}>
             <button className="btn btn-p" onClick={share} style={{background:"linear-gradient(135deg,#7B2FBE,#C8004E)"}}>🚀 Share My Moonshot</button>
@@ -1479,21 +1479,21 @@ function LandingScreen({ go }) {
         <div className="afl" style={{marginBottom:36}}><Moon size={86}/></div>
         <div className="afu" style={{marginBottom:16,animationDelay:".05s"}}>
           <span style={{display:"inline-block",padding:"5px 16px",borderRadius:100,border:"1px solid rgba(0,217,255,.3)",background:"rgba(0,217,255,.07)",fontSize:12,fontWeight:700,letterSpacing:".08em",color:"var(--c)"}}>
-            YOUR IMPACT IS NOT AN ACCIDENT
+            WE ARE IN THE SECOND RENAISSANCE
           </span>
         </div>
         <h1 className="afu" style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(42px,9vw,96px)",fontWeight:700,lineHeight:1.0,letterSpacing:"-.03em",margin:"0 auto 20px",animationDelay:".1s"}}>
           What's your<br/><span className="grad">moonshot?</span>
         </h1>
         <p className="afu" style={{color:"var(--mt)",fontSize:"clamp(15px,2.8vw,18px)",maxWidth:440,margin:"0 auto 44px",lineHeight:1.68,animationDelay:".2s"}}>
-          You didn't arrive here by accident. You came with a purpose — and a deal with the universe that hasn't been honored yet. This is where you name it.
+          We are living through a civilizational shift — and the people who shape it aren't waiting to be ready. They're naming their moonshot and moving. This is where you name yours.
         </p>
         <div className="afu" style={{display:"flex",flexWrap:"wrap",gap:12,justifyContent:"center",marginBottom:16,animationDelay:".3s"}}>
           <button className="btn btn-p xl" onClick={()=>go("breathe")} style={{background:"linear-gradient(135deg,#00B8D9,#7B2FBE,#C8004E)",backgroundSize:"200% auto",animation:"shim 3s linear infinite, pg 2.5s ease-in-out infinite"}}>
             ✦ Discover My Moonshot
           </button>
         </div>
-        <p className="afu" style={{color:"var(--mt)",fontSize:12,animationDelay:".4s"}}>Free · No account needed · 15 minutes</p>
+        <p className="afu" style={{color:"var(--mt)",fontSize:12,animationDelay:".4s"}}>Free · 15 minutes · Your contribution to the Second Renaissance</p>
       </section>
 
       {/* WHAT IS A MOONSHOT */}
@@ -1502,10 +1502,10 @@ function LandingScreen({ go }) {
           <div style={{textAlign:"center",marginBottom:40}}>
             <div className="lbl" style={{marginBottom:12}}>What is a Moonshot?</div>
             <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(26px,5vw,44px)",fontWeight:700,marginBottom:16,lineHeight:1.1}}>
-              Not a goal. Not a KPI.<br/><span className="grad">A deal with the universe.</span>
+              Not a goal. Not a KPI.<br/><span className="grad">A contribution to the Renaissance.</span>
             </h2>
             <p style={{color:"var(--mt)",fontSize:"clamp(14px,2.5vw,17px)",maxWidth:560,margin:"0 auto",lineHeight:1.72}}>
-              The term "moonshot" comes from the 1969 Apollo mission — but the <em style={{color:"rgba(238,242,255,.75)"}}>concept is ancient</em>. Every era has people who made a soul-level commitment to something bigger than themselves, before they knew if it was possible. That's what a moonshot is. And history has always been shaped by them.
+              The term "moonshot" comes from the 1969 Apollo mission — but the <em style={{color:"rgba(238,242,255,.75)"}}>concept is ancient</em>. Every civilizational leap had its moonshot thinkers — people who made a soul-level commitment before they knew if it was possible. We are in one of those moments right now. The Second Renaissance. And it needs people who know what they're here to build.
             </p>
           </div>
 
@@ -1528,7 +1528,7 @@ function LandingScreen({ go }) {
           {/* Devon's deeper definition */}
           <div className="card" style={{padding:"28px 32px",marginBottom:44,borderColor:"rgba(157,78,221,.2)",background:"radial-gradient(ellipse at top left, rgba(157,78,221,.08) 0%, transparent 60%)",textAlign:"center"}}>
             <p style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(17px,3vw,22px)",lineHeight:1.65,color:"#fff",marginBottom:10}}>
-              "A moonshot is a <em>deal you made with the universe</em><br/>before you knew what to call it.<br/>Bigger than your lifetime. Magnetic to the right people.<br/>Impossible without becoming who you're here to be."
+              "We are in the Second Renaissance — and every Renaissance<br/>needs its builders, its visionaries, its cathedrals.<br/>A moonshot is your contribution.<br/><em>The deal you made with the universe before you knew what to call it.</em>"
             </p>
             <a href="https://devonseegers.com" target="_blank" rel="noopener noreferrer" style={{color:"var(--p)",fontSize:13,fontWeight:600,textDecoration:"none",letterSpacing:".03em"}}>
               — Devon Seegers, Moonshot Mapping™
@@ -1539,7 +1539,7 @@ function LandingScreen({ go }) {
           <div style={{textAlign:"center",marginBottom:24}}>
             <div className="lbl" style={{marginBottom:8}}>History has always been shaped by moonshots</div>
             <p style={{color:"var(--mt)",fontSize:14,lineHeight:1.65,maxWidth:520,margin:"0 auto"}}>
-              Not goals. Not KPIs. Not quarterly targets. The people who changed civilization were playing a different game entirely — and so are you.
+              Not goals. Not KPIs. Not quarterly targets. Every Renaissance has its moonshots — the cathedrals of the age. The Second Renaissance is no different. And you are here for it.
             </p>
           </div>
           {/* Era grouping */}
@@ -1585,7 +1585,7 @@ function LandingScreen({ go }) {
       <section style={{padding:"40px 24px 60px",position:"relative",zIndex:1}}>
         <div style={{maxWidth:920,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:44}}>
-            <div className="lbl" style={{marginBottom:10}}>How It Works</div>
+            <div className="lbl" style={{marginBottom:10}}>Your Role in the Renaissance</div>
             <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(26px,5vw,42px)",fontWeight:700}}>Three steps to your <span className="grad">moonshot</span></h2>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:20}}>
@@ -1603,8 +1603,8 @@ function LandingScreen({ go }) {
       {/* SAMPLE OUTPUT */}
       <section style={{padding:"20px 24px 60px",position:"relative",zIndex:1}}>
         <div style={{maxWidth:660,margin:"0 auto",textAlign:"center"}}>
-          <div className="lbl" style={{marginBottom:10}}>Sample Output</div>
-          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(22px,4vw,34px)",fontWeight:700,marginBottom:28}}>This is what <span className="grad">clarity</span> looks like</h2>
+          <div className="lbl" style={{marginBottom:10}}>A Real Second Renaissance Moonshot</div>
+          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(22px,4vw,34px)",fontWeight:700,marginBottom:28}}>This is what a <span className="grad">Renaissance builder</span> sounds like</h2>
           <div className="card" style={{padding:36,background:"radial-gradient(ellipse at top,rgba(0,217,255,.08) 0%,transparent 70%)",borderColor:"rgba(0,217,255,.2)"}}>
             <p style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(16px,3.5vw,21px)",fontStyle:"italic",lineHeight:1.65,color:"#fff",marginBottom:14}}>"{SAMPLE}"</p>
             <div style={{color:"var(--c)",fontSize:12,fontWeight:700,letterSpacing:".05em",marginBottom:4}}>DEVON SEEGERS · FOUNDER</div>
@@ -1727,13 +1727,13 @@ function LandingScreen({ go }) {
       <section style={{padding:"60px 24px 100px",position:"relative",zIndex:1,textAlign:"center"}}>
         <div className="afl"><Moon size={62}/></div>
         <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(28px,6vw,54px)",fontWeight:700,margin:"28px auto 16px",maxWidth:560,lineHeight:1.1}}>
-          Stop cheating yourself.<br/>Name your <span className="grad">deal.</span>
+          The Second Renaissance<br/>needs your <span className="grad">moonshot.</span>
         </h2>
-        <p style={{color:"var(--mt)",fontSize:16,lineHeight:1.65,maxWidth:400,margin:"0 auto 36px"}}>Is what you're doing right now worth being here for? 15 minutes. Five questions. One statement that changes everything.</p>
+        <p style={{color:"var(--mt)",fontSize:16,lineHeight:1.65,maxWidth:440,margin:"0 auto 36px"}}>Every civilizational leap had its builders. You didn't arrive here by accident. 15 minutes to name the deal you made with the universe.</p>
         <button className="btn btn-p xl" onClick={()=>go("breathe")} style={{background:"linear-gradient(135deg,#00B8D9,#7B2FBE,#C8004E)",backgroundSize:"200% auto",animation:"shim 3s linear infinite, pg 2.5s ease-in-out infinite"}}>
           ✦ Start Free Now
         </button>
-        <p style={{color:"var(--mt)",fontSize:12,marginTop:14}}>No account. No credit card. Just clarity.</p>
+        <p style={{color:"var(--mt)",fontSize:12,marginTop:14}}>No account. No credit card. Just your place in the Renaissance.</p>
       </section>
       {/* FOOTER */}
       <footer style={{borderTop:"1px solid rgba(255,255,255,.06)",padding:"24px",textAlign:"center",position:"relative",zIndex:1}}>
