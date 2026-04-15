@@ -1206,6 +1206,14 @@ function LandingScreen({ go }) {
     {name:"Marcus T.",   role:"Founder & CEO",             q:"I was 8 years in and still couldn't articulate my why. Twenty minutes on WhatsMyMoonshot and I had it. Sent it to my whole team.",     av:"MT"},
     {name:"Dr. Amara O.",role:"Leadership Professor",      q:"I now start every semester with this exercise. Watching students discover their moonshot in a single session is genuinely moving.",        av:"AO"},
   ];
+  const MOONSHOTS = [
+    {e:"🚀",t:"Mars Colonization",   d:"SpaceX Starship making humanity multi-planetary"},
+    {e:"🧬",t:"CRISPR Gene Editing", d:"Rewriting DNA to cure genetic disease forever"},
+    {e:"⚡",t:"Nuclear Fusion",       d:"Unlimited clean energy from seawater"},
+    {e:"🧠",t:"Artificial General Intelligence", d:"The first non-human intelligence on Earth"},
+    {e:"🌊",t:"Seabed 2030",          d:"Mapping our entire ocean floor for the first time"},
+    {e:"🌍",t:"The UN SDGs",          d:"193 nations committed to ending poverty by 2030"},
+  ];
   const TIERS = [
     { name:"Starter",price:"Free",   period:"",          cta:"Start Free →",      hi:false, c:"rgba(255,255,255,.04)", b:"rgba(255,255,255,.08)",
       f:["Complete the full journey","AI moonshot statement","3 genius zones","Social cards — free to generate & share","Copy to clipboard"], fn:()=>go("breathe") },
@@ -1230,28 +1238,95 @@ function LandingScreen({ go }) {
           <span style={{color:"#fff"}}>WhatsMyMoonshot</span><span className="glow-c">.ai</span>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <button className="btn btn-g sm" style={{fontSize:13}} onClick={()=>document.getElementById("lp-pricing")?.scrollIntoView({behavior:"smooth"})}>Pricing</button>
+          <a href="https://devonseegers.com" target="_blank" rel="noopener noreferrer" className="btn btn-g sm" style={{fontSize:13,textDecoration:"none"}}>Moonshot Mapping™</a>
           <button className="btn btn-p sm" onClick={()=>go("breathe")}>Start Free →</button>
         </div>
       </nav>
       {/* HERO */}
-      <section style={{minHeight:"90vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"80px 24px 60px",textAlign:"center",position:"relative",zIndex:1}}>
-        <div className="afl" style={{marginBottom:40}}><Moon size={90}/></div>
-        <h1 className="afu" style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(30px,7vw,72px)",fontWeight:700,lineHeight:1.07,letterSpacing:"-.025em",maxWidth:820,margin:"0 auto 22px",animationDelay:".1s"}}>
-          You already know you're here<br/>to do something significant.
-          <br/><span className="grad">You just haven't named it yet.</span>
+      <section style={{minHeight:"92vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"80px 24px 60px",textAlign:"center",position:"relative",zIndex:1}}>
+        <div className="afl" style={{marginBottom:36}}><Moon size={86}/></div>
+        <div className="afu" style={{marginBottom:16,animationDelay:".05s"}}>
+          <span style={{display:"inline-block",padding:"5px 16px",borderRadius:100,border:"1px solid rgba(0,217,255,.3)",background:"rgba(0,217,255,.07)",fontSize:12,fontWeight:700,letterSpacing:".08em",color:"var(--c)"}}>
+            THE SECOND RENAISSANCE IS HERE
+          </span>
+        </div>
+        <h1 className="afu" style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(42px,9vw,96px)",fontWeight:700,lineHeight:1.0,letterSpacing:"-.03em",margin:"0 auto 20px",animationDelay:".1s"}}>
+          What's your<br/><span className="grad">moonshot?</span>
         </h1>
-        <p className="afu" style={{color:"var(--mt)",fontSize:"clamp(15px,3vw,19px)",maxWidth:480,margin:"0 auto 44px",lineHeight:1.65,animationDelay:".2s"}}>
-          A 15-minute, trauma-informed journey to your transformative vision. Free to start.
+        <p className="afu" style={{color:"var(--mt)",fontSize:"clamp(15px,2.8vw,18px)",maxWidth:440,margin:"0 auto 44px",lineHeight:1.68,animationDelay:".2s"}}>
+          A 15-minute journey to name your soul-level vision — the one that's bigger than your career, magnetic to the right people, and impossible without becoming who you're meant to be.
         </p>
-        <div className="afu" style={{display:"flex",flexWrap:"wrap",gap:12,justifyContent:"center",marginBottom:14,animationDelay:".3s"}}>
+        <div className="afu" style={{display:"flex",flexWrap:"wrap",gap:12,justifyContent:"center",marginBottom:16,animationDelay:".3s"}}>
           <button className="btn btn-p xl" onClick={()=>go("breathe")} style={{background:"linear-gradient(135deg,#00B8D9,#7B2FBE,#C8004E)",backgroundSize:"200% auto",animation:"shim 3s linear infinite, pg 2.5s ease-in-out infinite"}}>
             ✦ Discover My Moonshot
           </button>
-          <button className="btn btn-g lg" onClick={()=>document.getElementById("lp-pricing")?.scrollIntoView({behavior:"smooth"})}>See Pricing</button>
         </div>
         <p className="afu" style={{color:"var(--mt)",fontSize:12,animationDelay:".4s"}}>Free · No account needed · 15 minutes</p>
       </section>
+
+      {/* WHAT IS A MOONSHOT */}
+      <section style={{padding:"20px 24px 60px",position:"relative",zIndex:1}}>
+        <div style={{maxWidth:900,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:40}}>
+            <div className="lbl" style={{marginBottom:12}}>What is a Moonshot?</div>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(26px,5vw,44px)",fontWeight:700,marginBottom:16,lineHeight:1.1}}>
+              Not a goal. Not a dream.<br/><span className="grad">A direction of travel.</span>
+            </h2>
+            <p style={{color:"var(--mt)",fontSize:"clamp(14px,2.5vw,17px)",maxWidth:560,margin:"0 auto",lineHeight:1.72}}>
+              The term "moonshot" comes from the 1969 Apollo mission — the audacious commitment to land a human on the moon before anyone knew if it was even possible. Today, a moonshot is any vision with the same character: <em style={{color:"rgba(238,242,255,.75)"}}>10x impact, not 10% improvement.</em>
+            </p>
+          </div>
+
+          {/* 3 criteria cards */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:14,marginBottom:44}}>
+            {[
+              {n:"01",icon:"🌍",title:"Affects billions",     body:"A moonshot solves a problem at civilizational scale — not niche, not incremental. It changes life for millions of people."},
+              {n:"02",icon:"⚡",title:"Demands a breakthrough", body:"It requires technology or thinking that doesn't exist yet. It should sound audacious — even impossible — at first."},
+              {n:"03",icon:"🔭",title:"Has a glimmer of hope", body:"Not pure fantasy. A moonshot is grounded enough to be achievable in 5–10 years with relentless commitment and the right people."},
+            ].map((c,i)=>(
+              <div key={i} className="card" style={{padding:24,position:"relative",overflow:"hidden",borderColor:"rgba(0,217,255,.08)"}}>
+                <div style={{position:"absolute",top:8,right:14,fontFamily:"'Playfair Display',serif",fontSize:48,fontWeight:700,color:"rgba(0,217,255,.05)",lineHeight:1}}>{c.n}</div>
+                <div style={{fontSize:32,marginBottom:12}}>{c.icon}</div>
+                <h3 style={{fontWeight:700,fontSize:16,marginBottom:8,color:"#fff"}}>{c.title}</h3>
+                <p style={{color:"var(--mt)",fontSize:13,lineHeight:1.65}}>{c.body}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Devon's deeper definition */}
+          <div className="card" style={{padding:"28px 32px",marginBottom:44,borderColor:"rgba(157,78,221,.2)",background:"radial-gradient(ellipse at top left, rgba(157,78,221,.08) 0%, transparent 60%)",textAlign:"center"}}>
+            <p style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(17px,3vw,22px)",lineHeight:1.65,color:"#fff",marginBottom:10}}>
+              "A moonshot is a <em>soul-level direction of travel</em> —<br/>bigger than your lifetime, magnetic to the right allies,<br/>impossible without transformation."
+            </p>
+            <a href="https://devonseegers.com" target="_blank" rel="noopener noreferrer" style={{color:"var(--p)",fontSize:13,fontWeight:600,textDecoration:"none",letterSpacing:".03em"}}>
+              — Devon Seegers, Moonshot Mapping™
+            </a>
+          </div>
+
+          {/* Real-world moonshots grid */}
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <div className="lbl" style={{marginBottom:8}}>The Second Renaissance</div>
+            <p style={{color:"var(--mt)",fontSize:14,lineHeight:1.65,maxWidth:520,margin:"0 auto"}}>
+              Historians will look back at this era the way we see the Renaissance — as a civilization reaching for something greater than itself. These are the moonshots happening right now:
+            </p>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10,marginBottom:12}}>
+            {MOONSHOTS.map((m,i)=>(
+              <div key={i} className="card" style={{padding:"14px 16px",display:"flex",alignItems:"center",gap:12,borderColor:"rgba(255,255,255,.05)"}}>
+                <span style={{fontSize:22,flexShrink:0}}>{m.e}</span>
+                <div>
+                  <div style={{fontWeight:600,fontSize:13,marginBottom:2}}>{m.t}</div>
+                  <div style={{color:"var(--mt)",fontSize:11,lineHeight:1.4}}>{m.d}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{textAlign:"center",color:"var(--mt)",fontSize:12,marginTop:8}}>
+            Source: <em>Moonshots of the Second Renaissance</em> research · UN SDGs · Google X · XPRIZE Foundation
+          </p>
+        </div>
+      </section>
+
       {/* SOCIAL PROOF */}
       <section style={{padding:"0 24px 60px",position:"relative",zIndex:1}}>
         <div style={{maxWidth:700,margin:"0 auto",display:"flex",flexWrap:"wrap",justifyContent:"center",gap:"clamp(20px,5vw,60px)"}}>
@@ -1339,6 +1414,37 @@ function LandingScreen({ go }) {
           </div>
         </div>
       </section>
+      {/* MOONSHOT MAPPING CTA */}
+      <section style={{padding:"20px 24px 60px",position:"relative",zIndex:1}}>
+        <div style={{maxWidth:720,margin:"0 auto"}}>
+          <div className="card" style={{padding:40,background:"radial-gradient(ellipse at bottom left,rgba(0,217,255,.07) 0%,rgba(157,78,221,.08) 100%)",borderColor:"rgba(0,217,255,.2)",textAlign:"center",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",top:0,right:0,padding:"6px 16px",background:"linear-gradient(135deg,var(--c),var(--p))",fontSize:11,fontWeight:700,color:"#040C1A",borderBottomLeftRadius:12}}>DEEP WORK</div>
+            <div style={{fontSize:36,marginBottom:12}}>🗺️</div>
+            <div className="lbl" style={{marginBottom:10,color:"var(--c)"}}>Ready to go deeper?</div>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(22px,4vw,32px)",fontWeight:700,marginBottom:14}}>
+              Moonshot Mapping™<br/><span style={{color:"var(--mt)",fontWeight:400,fontSize:"0.75em"}}>with Devon Seegers</span>
+            </h2>
+            <p style={{color:"var(--mt)",fontSize:14,lineHeight:1.75,maxWidth:480,margin:"0 auto 24px"}}>
+              WhatsMyMoonshot gives you your statement. <strong style={{color:"rgba(238,242,255,.85)"}}>Moonshot Mapping™ gives you the map.</strong> A 2-hour, 1:1 session that collapses the gap between who you are and who your mission needs you to become — producing radical clarity, internal congruence, and a decision architecture for your next bold move.
+            </p>
+            <div style={{display:"flex",flexWrap:"wrap",justifyContent:"center",gap:10,marginBottom:20}}>
+              {["Radical clarity on your highest calling","Alignment between your brand, being & beliefs","Decision architecture — what to say yes to","Your complete visual clarity map"].map((f,i)=>(
+                <div key={i} style={{padding:"6px 14px",borderRadius:100,background:"rgba(0,217,255,.08)",border:"1px solid rgba(0,217,255,.2)",fontSize:12,color:"var(--c)",fontWeight:500}}>{f}</div>
+              ))}
+            </div>
+            <blockquote style={{fontFamily:"'Playfair Display',serif",fontStyle:"italic",fontSize:15,color:"rgba(238,242,255,.7)",marginBottom:24,lineHeight:1.6}}>
+              "I've spent $50K+ on coaching. Two hours with Devon gave me more clarity than all of it."<br/>
+              <span style={{fontSize:12,color:"var(--mt)",fontStyle:"normal",fontWeight:600}}>— TEDx Speaker + Men's Work Facilitator</span>
+            </blockquote>
+            <a href="https://devonseegers.com" target="_blank" rel="noopener noreferrer"
+              className="btn btn-p lg" style={{display:"inline-flex",textDecoration:"none",background:"linear-gradient(135deg,#00B8D9,#7B2FBE)",animation:"pg 2.5s ease-in-out infinite"}}>
+              Explore Moonshot Mapping™ →
+            </a>
+            <p style={{fontSize:12,color:"var(--mt)",marginTop:14}}>devonseegers.com</p>
+          </div>
+        </div>
+      </section>
+
       {/* FOR COACHES */}
       <section style={{padding:"20px 24px 60px",position:"relative",zIndex:1}}>
         <div style={{maxWidth:720,margin:"0 auto"}}>
@@ -1392,7 +1498,10 @@ function LandingScreen({ go }) {
             <button key={l} style={{background:"none",border:"none",color:"var(--mt)",cursor:"pointer",fontSize:12,fontFamily:"'DM Sans',sans-serif",padding:"4px 0"}}>{l}</button>
           ))}
         </div>
-        <p style={{color:"var(--mt)",fontSize:12}}>© 2025 WhatsMyMoonshot.ai · Built with 💙 by Devon Seegers</p>
+        <p style={{color:"var(--mt)",fontSize:12}}>
+          © 2025 WhatsMyMoonshot.ai · Built with 💙 by{" "}
+          <a href="https://devonseegers.com" target="_blank" rel="noopener noreferrer" style={{color:"var(--c)",textDecoration:"none",fontWeight:600}}>Devon Seegers</a>
+        </p>
       </footer>
     </div>
   );
