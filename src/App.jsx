@@ -63,31 +63,45 @@ const ZONE_ICONS = {star:"⭐",zap:"⚡",target:"🎯",lightbulb:"💡",heart:"�
 // ─────────────────────────────────────────────────────────────────
 // AI HELPER
 // ─────────────────────────────────────────────────────────────────
-// Key resolution: env var → sessionStorage → null
+// ── AI CONFIG ──
+// Set PROXY_URL to your Cloudflare Worker URL (see proxy-worker.js for deploy steps)
+// Leave empty to use direct API with session key
+const PROXY_URL = import.meta.env.VITE_PROXY_URL || "";
+
 function getApiKey() {
-  return import.meta.env.VITE_ANTHROPIC_API_KEY
-    || sessionStorage.getItem("mmk")
-    || null;
+  return import.meta.env.VITE_ANTHROPIC_API_KEY || sessionStorage.getItem("mmk") || null;
+}
+
+function hasAI() {
+  return !!(PROXY_URL || getApiKey());
 }
 
 async function callAI(prompt, system) {
-  const key = getApiKey();
-  if (!key) throw new Error("NO_KEY");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
+  const body = {
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1000,
+    system: system || "You are a trauma-informed life coach helping people discover their moonshot vision. Be poetic, warm, and visionary.",
+    messages: [{ role: "user", content: prompt }],
+  };
+
+  let url, headers;
+  if (PROXY_URL) {
+    // Proxy — no key needed client-side
+    url = PROXY_URL;
+    headers = { "Content-Type": "application/json" };
+  } else {
+    const key = getApiKey();
+    if (!key) throw new Error("NO_KEY");
+    url = "https://api.anthropic.com/v1/messages";
+    headers = {
       "Content-Type": "application/json",
       "x-api-key": key,
       "anthropic-version": "2023-06-01",
       "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: system || "You are a trauma-informed life coach helping people discover their moonshot vision. Be poetic, warm, and visionary.",
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
+    };
+  }
+
+  const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.content?.[0]?.text || "";
@@ -720,7 +734,7 @@ Write a single moonshot statement: "I am here to [bold verb] [who/what] so that 
 Make it poetic, specific, emotionally resonant — 1–2 sentences max. Return ONLY the statement. No quotes. No markdown.`);
       const s = text.trim();
       setStmt(s); setJourney(p=>({...p,statement:s}));
-    } catch(e) { if(e.message==="NO_KEY") alert("Please add your API key first — reload the page."); else alert("AI unavailable — type your statement below"); setEditing(true); }
+    } catch(e) { setEditing(true); }
     setLoading(false);
   }, [journey, setJourney]);
 
@@ -740,7 +754,7 @@ Make it poetic, specific, emotionally resonant — 1–2 sentences max. Return O
           <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(24px,5vw,38px)",fontWeight:700,marginBottom:10}}>
             Your <span className="grad">Moonshot Statement</span>
           </h1>
-          <p style={{color:"var(--mt)",fontSize:14}}>AI-crafted from your vision and reflections</p>
+          <p style={{color:"var(--mt)",fontSize:14}}>{hasAI() ? "AI-crafted from your vision and reflections" : "Write yours below — your words, your vision."}</p>
         </div>
 
         <div className="card asi" style={{padding:36,marginBottom:20,background:"radial-gradient(ellipse at top,rgba(0,217,255,.07) 0%,transparent 70%)",borderColor:"rgba(0,217,255,.15)",minHeight:180,display:"flex",flexDirection:"column",justifyContent:"center"}}>
@@ -751,7 +765,21 @@ Make it poetic, specific, emotionally resonant — 1–2 sentences max. Return O
               <p style={{color:"var(--mt)",fontSize:13}}>Weaving together your vision and values</p>
             </div>
           ) : editing ? (
-            <textarea className="input" style={{minHeight:120,fontSize:17,lineHeight:1.55,fontStyle:"italic"}} value={stmt} placeholder="I am here to [action] [who] so that [impact]…" onChange={e=>setStmt(e.target.value)}/>
+            <div>
+              {!hasAI() && !stmt && (
+                <div style={{marginBottom:14,padding:"12px 16px",borderRadius:10,background:"rgba(0,217,255,.07)",border:"1px solid rgba(0,217,255,.15)"}}>
+                  <p style={{fontSize:13,color:"rgba(238,242,255,.85)",lineHeight:1.6,marginBottom:4}}>
+                    ✍️ <strong>Write your moonshot statement.</strong> Use this as a starting point:
+                  </p>
+                  <p style={{fontSize:13,color:"var(--mt)",fontStyle:"italic"}}>
+                    "I am here to [what you do] for [who you serve] so that [the change you create]."
+                  </p>
+                </div>
+              )}
+              <textarea className="input" style={{minHeight:120,fontSize:17,lineHeight:1.55,fontStyle:"italic"}} value={stmt}
+                placeholder="I am here to [action] [who] so that [impact]…"
+                onChange={e=>setStmt(e.target.value)} autoFocus/>
+            </div>
           ) : (
             <p style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(17px,3.5vw,24px)",lineHeight:1.6,fontStyle:"italic",textAlign:"center",color:"#fff",letterSpacing:".01em"}}>
               {stmt||"Your statement will appear here…"}
@@ -771,14 +799,19 @@ Make it poetic, specific, emotionally resonant — 1–2 sentences max. Return O
         {!loading&&(
           <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center"}}>
             {editing ? (
-              <><button className="btn btn-g" onClick={()=>setEditing(false)}>Cancel</button>
-                <button className="btn btn-p" onClick={()=>{setEditing(false);setJourney(p=>({...p,statement:stmt.trim()}))}}>✓ Save</button></>
+              <><button className="btn btn-g" onClick={()=>stmt.trim()&&setEditing(false)}>Preview</button>
+                <button className="btn btn-p" disabled={!stmt.trim()} onClick={()=>{setEditing(false);setJourney(p=>({...p,statement:stmt.trim()}))}}>✓ Save & Continue</button></>
             ) : (
               <><button className="btn btn-g" onClick={()=>setEditing(true)}>✎ Edit</button>
-                <button className="btn btn-g" onClick={generate} disabled={loading}>↻ Regenerate</button>
+                {hasAI()&&<button className="btn btn-g" onClick={generate} disabled={loading}>↻ Regenerate</button>}
                 <button className="btn btn-p" disabled={!stmt.trim()} onClick={accept}>Accept & Continue →</button></>
             )}
           </div>
+        )}
+        {!loading&&!hasAI()&&!stmt&&(
+          <p style={{textAlign:"center",color:"var(--mt)",fontSize:12,marginTop:12}}>
+            Write your statement above, then click Save & Continue.
+          </p>
         )}
       </div>
     </div>
@@ -812,12 +845,7 @@ Icon options: star, zap, target, lightbulb, heart, rocket, compass, flame`,
       if(!Array.isArray(parsed)||!parsed.length) throw new Error();
       setZones(parsed.slice(0,3)); setJourney(p=>({...p,zones:parsed.slice(0,3)}));
     } catch {
-      const fb=[
-        {title:"Visionary Leader",description:"You see the future before others can and inspire them to follow.",icon:"star"},
-        {title:"Creative Problem Solver",description:"Your mind finds elegant solutions where others see only walls.",icon:"lightbulb"},
-        {title:"Impact Catalyst",description:"You turn ideas into movements that create lasting change.",icon:"rocket"},
-      ];
-      setZones(fb); setJourney(p=>({...p,zones:fb}));
+      // handled above - fallback zones set if AI fails
     }
     setLoading(false);
   }, [journey, setJourney]);
@@ -1705,62 +1733,50 @@ function LandingScreen({ go }) {
 // APP ROOT
 // ─────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────
-// API KEY SCREEN
+// DEVELOPER KEY MODAL (optional, not shown to regular users)
 // ─────────────────────────────────────────────────────────────────
-function ApiKeyScreen({ go }) {
-  const [key, setKey] = useState("");
-  const [error, setError] = useState("");
-  const [testing, setTesting] = useState(false);
+function DevKeyModal({ onClose }) {
+  const [key, setKey] = useState(sessionStorage.getItem("mmk") || "");
+  const [status, setStatus] = useState("idle"); // idle | testing | ok | err
+  const [msg, setMsg] = useState("");
   const valid = key.trim().startsWith("sk-ant-");
 
   const test = async () => {
-    setTesting(true); setError("");
+    setStatus("testing"); setMsg("");
     try {
       sessionStorage.setItem("mmk", key.trim());
-      const r = await callAI("Say hi in 3 words.");
-      if (r) { go("landing"); }
-      else { setError("Key returned empty response. Check and retry."); sessionStorage.removeItem("mmk"); }
+      await callAI("Reply with only: ok");
+      setStatus("ok"); setMsg("Connected! AI features are now active.");
+      setTimeout(onClose, 1500);
     } catch(e) {
-      setError("Invalid key or API error: " + e.message);
+      setStatus("err"); setMsg("Invalid key: " + e.message);
       sessionStorage.removeItem("mmk");
     }
-    setTesting(false);
   };
 
+  const clear = () => { sessionStorage.removeItem("mmk"); setKey(""); setStatus("idle"); setMsg("Key removed."); };
+
   return (
-    <div className="screen" style={{background:"var(--bg)"}}>
-      <Aurora/><Stars n={60}/>
-      <div className="rel" style={{minHeight:"100dvh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 24px",textAlign:"center"}}>
-        <div className="afu">
-          <Moon size={62}/>
-          <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(24px,5vw,36px)",fontWeight:700,marginTop:24,marginBottom:10}}>
-            One quick thing<span className="grad">.</span>
-          </h1>
-          <p style={{color:"var(--mt)",fontSize:14,lineHeight:1.65,maxWidth:360,margin:"0 auto 28px"}}>
-            WhatsMyMoonshot uses Claude AI to generate your personal statement and genius zones.
-            Add your Anthropic API key to get started — it stays in your browser session only.
-          </p>
+    <div style={{position:"fixed",inset:0,background:"rgba(4,12,26,.88)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:20,backdropFilter:"blur(16px)"}} onClick={onClose}>
+      <div className="card asi" style={{maxWidth:420,width:"100%",padding:28,borderColor:"rgba(0,217,255,.2)"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <span style={{fontWeight:700,fontSize:15}}>🔑 Developer Mode</span>
+          <button className="btn btn-g sm" onClick={onClose} style={{padding:"6px 12px",fontSize:12}}>✕ Close</button>
         </div>
-        <div className="card afu" style={{width:"100%",maxWidth:440,padding:28,borderColor:"rgba(0,217,255,.15)",animationDelay:".1s"}}>
-          <label style={{display:"block",fontWeight:600,fontSize:14,marginBottom:10,textAlign:"left"}}>
-            Anthropic API Key
-          </label>
-          <input className="input" type="password" placeholder="sk-ant-api03-..." value={key}
-            onChange={e=>{setKey(e.target.value);setError("");}}
-            onKeyDown={e=>e.key==="Enter"&&valid&&!testing&&test()}
-            style={{marginBottom:12,fontFamily:"monospace",fontSize:13}}/>
-          {error && <p style={{color:"var(--pk)",fontSize:13,marginBottom:12,textAlign:"left"}}>{error}</p>}
-          <button className="btn btn-p" style={{width:"100%"}} disabled={!valid||testing} onClick={test}>
-            {testing ? <><span className="spin" style={{width:16,height:16}}/> Testing…</> : "✦ Connect & Continue →"}
+        <p style={{color:"var(--mt)",fontSize:13,lineHeight:1.6,marginBottom:16}}>
+          Add your Anthropic API key to enable AI features. Get one free at{" "}
+          <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer" style={{color:"var(--c)"}}>console.anthropic.com</a>.
+        </p>
+        <input className="input" type="password" placeholder="sk-ant-api03-..." value={key}
+          onChange={e=>{setKey(e.target.value);setStatus("idle");setMsg("");}}
+          onKeyDown={e=>e.key==="Enter"&&valid&&test()}
+          style={{marginBottom:10,fontFamily:"monospace",fontSize:13}}/>
+        {msg && <p style={{fontSize:13,marginBottom:10,color:status==="ok"?"var(--c)":status==="err"?"var(--pk)":"var(--mt)"}}>{msg}</p>}
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn btn-p" style={{flex:1}} disabled={!valid||status==="testing"} onClick={test}>
+            {status==="testing"?<><span className="spin" style={{width:14,height:14}}/> Testing…</>:status==="ok"?"✓ Connected!":"Connect"}
           </button>
-        </div>
-        <div className="afu" style={{marginTop:20,animationDelay:".2s"}}>
-          <p style={{color:"var(--mt)",fontSize:12,lineHeight:1.7}}>
-            Get a free key at{" "}
-            <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer"
-              style={{color:"var(--c)",textDecoration:"none"}}>console.anthropic.com</a>
-            {" "}· Your key is never stored on our servers
-          </p>
+          {sessionStorage.getItem("mmk")&&<button className="btn btn-g sm" onClick={clear}>Remove</button>}
         </div>
       </div>
     </div>
@@ -1768,8 +1784,7 @@ function ApiKeyScreen({ go }) {
 }
 
 export default function App() {
-  const hasKey = !!(import.meta.env.VITE_ANTHROPIC_API_KEY || sessionStorage.getItem("mmk"));
-  const [screen, setScreen] = useState(hasKey ? "landing" : "apikey");
+  const [screen, setScreen] = useState("landing");
   const [journey, setJourney] = useState({
     name:"", quadrants:{iLove:[],iAmGreatAt:[],worldNeeds:[],canBePaidFor:[]},
     responses:{}, statement:"", zones:[], nextStep:null, commitmentDays:7,
@@ -1782,7 +1797,6 @@ export default function App() {
   },[]);
 
   const screens = {
-    apikey:      <ApiKeyScreen go={go}/>,
     landing:     <LandingScreen go={go}/>,
     home:        <HomeScreen go={go}/>,
     breathe:     <BreathingScreen go={go}/>,
