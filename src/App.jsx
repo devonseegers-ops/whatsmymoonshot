@@ -11,11 +11,36 @@ const SDG_OPTIONS = {
 };
 
 const PROMPTS = [
-  { id:"purpose", q:"If you knew you could not fail — what would you dedicate your life to?",           hint:"Think beyond career. What impact do you most want to leave on the world?" },
-  { id:"gift",    q:"What unique gift do you carry that the world desperately needs right now?",        hint:"Your experiences, scars, and perspective are a superpower. What is it?" },
-  { id:"flow",    q:"What activity makes you lose track of time? When do you feel most fully alive?",  hint:"This is where your passion and genius intersect." },
-  { id:"pain",    q:"What problem in the world breaks your heart — and why does it break yours?",       hint:"Your wound is often your calling. What injustice or gap calls to you?" },
-  { id:"vision",  q:"Imagine your life 10 years from now. Walk me through a single perfect day.",       hint:"Be specific: where are you, who's with you, what are you creating?" },
+  {
+    id:"unsaid",
+    q:"What's the dream you don't say out loud?",
+    hint:"The vision you keep circling. The one that feels too big, too vulnerable, or too real to admit.",
+    phase:"Externalize",
+  },
+  {
+    id:"avoiding",
+    q:"What decision are you avoiding — and what would you do if you finally made it?",
+    hint:"The thing that keeps showing up. The tension you can't resolve. Name it here.",
+    phase:"Externalize",
+  },
+  {
+    id:"alive",
+    q:"Who are you when you're doing your most alive work?",
+    hint:"Not your role or title. What does your energy feel like? What's happening around you?",
+    phase:"Visualize",
+  },
+  {
+    id:"pain",
+    q:"What problem in the world breaks your heart — and why does it break yours specifically?",
+    hint:"Your wound is often your calling. The injustice you feel personally is where your power lives.",
+    phase:"Visualize",
+  },
+  {
+    id:"synthesis",
+    q:"The thing I would regret not building — in 12 to 36 months — is...",
+    hint:"Not a goal. Not a plan. The thing your future self is counting on present-you to begin.",
+    phase:"Synthesize",
+  },
 ];
 
 const NEXT_STEPS = [
@@ -586,6 +611,7 @@ function PromptsScreen({ go, journey, setJourney }) {
   }, [prompt.id]);
 
   const voice = useVoice(addText);
+  const isFirst = idx === 0 && !responses[prompt.id];
 
   const next = () => {
     if (!resp.trim()) return alert("Please share something before continuing — even a few words.");
@@ -606,9 +632,30 @@ function PromptsScreen({ go, journey, setJourney }) {
           <div className="prog"><div className="prog-f" style={{width:`${((idx+1)/PROMPTS.length)*100}%`}}/></div>
         </div>
 
+        {idx === 0 && (
+          <div className="card" style={{padding:"14px 18px",marginBottom:14,borderColor:"rgba(0,217,255,.08)",display:"flex",gap:12,alignItems:"flex-start"}}>
+            <span style={{fontSize:20,flexShrink:0,lineHeight:1.3}}>💡</span>
+            <p style={{color:"var(--mt)",fontSize:13,lineHeight:1.65}}>
+              <strong style={{color:"rgba(238,242,255,.8)"}}>Most people don't lack insight — they're trapped inside it.</strong>{" "}
+              These questions are designed to externalize what you already know. Write without editing. There are no wrong answers.
+            </p>
+          </div>
+        )}
+
         <div key={prompt.id} className="card asi" style={{padding:28,marginBottom:16,borderColor:"rgba(0,217,255,.1)"}}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,color:"var(--c)",fontSize:12,fontWeight:700,letterSpacing:".06em"}}>
-            <span style={{opacity:.8}}>✦</span> QUESTION {idx+1}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,color:"var(--c)",fontSize:12,fontWeight:700,letterSpacing:".06em"}}>
+              <span style={{opacity:.8}}>✦</span> QUESTION {idx+1} OF {PROMPTS.length}
+            </div>
+            {prompt.phase && (
+              <span style={{fontSize:10,fontWeight:700,letterSpacing:".08em",padding:"3px 10px",borderRadius:100,
+                background: prompt.phase==="Externalize"?"rgba(0,217,255,.1)":prompt.phase==="Visualize"?"rgba(157,78,221,.1)":"rgba(255,214,10,.1)",
+                color: prompt.phase==="Externalize"?"var(--c)":prompt.phase==="Visualize"?"var(--p)":"var(--g)",
+                border: `1px solid ${prompt.phase==="Externalize"?"rgba(0,217,255,.25)":prompt.phase==="Visualize"?"rgba(157,78,221,.25)":"rgba(255,214,10,.25)"}`,
+              }}>
+                {prompt.phase.toUpperCase()}
+              </span>
+            )}
           </div>
           <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(18px,4vw,25px)",fontWeight:700,lineHeight:1.38,marginBottom:10,color:"#fff"}}>{prompt.q}</h2>
           <p style={{color:"var(--mt)",fontSize:13,fontStyle:"italic",lineHeight:1.55}}>{prompt.hint}</p>
@@ -908,16 +955,34 @@ function CelebrationScreen({ go, journey }) {
           )}
         </div>
 
-        {/* Affirmation */}
-        <div className="card afu" style={{padding:22,marginBottom:28,textAlign:"center",borderColor:"rgba(255,214,10,.15)",animationDelay:".1s"}}>
-          <p style={{fontFamily:"'Playfair Display',serif",fontSize:16,fontStyle:"italic",lineHeight:1.7,color:"var(--g)"}}>
-            "You are not here to be average. You are here to be awesome."
+        {/* Devon's quote */}
+        <div className="card afu" style={{padding:22,marginBottom:20,textAlign:"center",borderColor:"rgba(0,217,255,.12)",animationDelay:".1s",background:"radial-gradient(ellipse at center,rgba(0,217,255,.05) 0%,transparent 70%)"}}>
+          <p style={{fontFamily:"'Playfair Display',serif",fontSize:17,fontStyle:"italic",lineHeight:1.7,color:"rgba(238,242,255,.85)",marginBottom:6}}>
+            "You don't leave motivated. You leave <strong style={{color:"var(--c)"}}>oriented.</strong>"
           </p>
+          <p style={{fontSize:12,color:"var(--mt)"}}>— Moonshot Mapping™ · Devon Seegers</p>
+        </div>
+
+        {/* 90-day plan teaser */}
+        <div className="card afu" style={{padding:24,marginBottom:24,borderColor:"rgba(157,78,221,.15)",animationDelay:".15s"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+            <span style={{fontSize:20}}>🗺️</span>
+            <div className="lbl" style={{color:"var(--p)"}}>Your 90-Day Clarity Map</div>
+          </div>
+          <p style={{color:"var(--mt)",fontSize:13,lineHeight:1.65,marginBottom:12}}>
+            Export your full results to get your AI-generated 90-day roadmap — with weekly milestones, 3 key actions, and a printable clarity map you can return to every morning.
+          </p>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {["Week 1-4: Foundation","Week 5-8: Momentum","Week 9-12: Acceleration"].map((w,i)=>(
+              <span key={i} style={{padding:"4px 12px",borderRadius:100,fontSize:11,fontWeight:600,
+                background:"rgba(157,78,221,.1)",border:"1px solid rgba(157,78,221,.2)",color:"var(--p)"}}>{w}</span>
+            ))}
+          </div>
         </div>
 
         <div style={{display:"flex",flexWrap:"wrap",gap:10,justifyContent:"center",marginBottom:32}}>
           <button className="btn btn-g" onClick={copy}>{copied?"✓ Copied!":"📋 Copy Statement"}</button>
-          <button className="btn btn-p lg" onClick={()=>go("export")}>📥 Export & Share →</button>
+          <button className="btn btn-p lg" onClick={()=>go("export")}>🗺️ Get My Clarity Map →</button>
         </div>
 
         {/* ─── VIRAL CTA ─── */}
@@ -949,6 +1014,43 @@ function ExportScreen({ go, journey }) {
   const [genning, setGenning] = useState({});
   const [modal, setModal] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [roadmap, setRoadmap] = useState(null);
+  const [genRoadmap, setGenRoadmap] = useState(false);
+
+  const generateRoadmap = useCallback(async () => {
+    setGenRoadmap(true);
+    try {
+      const text = await callAI(
+        `Based on this person's moonshot journey, create a practical 90-day roadmap.
+
+Moonshot Statement: "${journey.statement || ""}"
+Genius Zones: ${JSON.stringify((journey.zones||[]).map(z=>z.title))}
+Next Step Chosen: ${journey.nextStep?.title || "not specified"}
+
+Return ONLY valid JSON (no markdown) in this exact format:
+{
+  "why": "One powerful sentence about why this moonshot MUST happen — make it personal and visceral",
+  "actions": [
+    {"n": 1, "title": "Action title", "desc": "One clear sentence on what to do"},
+    {"n": 2, "title": "Action title", "desc": "One clear sentence on what to do"},
+    {"n": 3, "title": "Action title", "desc": "One clear sentence on what to do"}
+  ],
+  "weeks": [
+    {"range": "Week 1–4", "label": "Foundation", "focus": "What to build/do/establish in weeks 1-4"},
+    {"range": "Week 5–8", "label": "Momentum",   "focus": "What to build/do/establish in weeks 5-8"},
+    {"range": "Week 9–12","label": "Acceleration","focus": "What to build/do/establish in weeks 9-12"}
+  ],
+  "reward": "A specific, meaningful reward for completing the 90 days"
+}`,
+        "You are a strategic clarity coach. Return only valid JSON. No markdown. No explanation."
+      );
+      let parsed;
+      try { parsed = JSON.parse(text.replace(/```json|```/g,"").trim()); }
+      catch { const m = text.match(/\{[\s\S]*\}/); parsed = m ? JSON.parse(m[0]) : null; }
+      if (parsed) setRoadmap(parsed);
+    } catch(e) { console.error(e); }
+    setGenRoadmap(false);
+  }, [journey]);
 
   const copy = () => { navigator.clipboard.writeText(journey.statement||""); setCopied(true); setTimeout(()=>setCopied(false),2200); };
   const share = async () => {
@@ -1028,6 +1130,17 @@ function ExportScreen({ go, journey }) {
               <p style={{fontSize:15,fontWeight:600}}>{journey.nextStep.emoji} {journey.nextStep.title}</p>
             </div>
           )}
+          {roadmap&&(
+            <div style={{marginBottom:16}}>
+              <div className="lbl" style={{marginBottom:8}}>90-Day Roadmap</div>
+              <p style={{fontStyle:"italic",fontSize:13,marginBottom:8,color:"rgba(0,0,0,.6)"}}>{roadmap.why}</p>
+              {(roadmap.weeks||[]).map((w,i)=>(
+                <div key={i} style={{fontSize:12,marginBottom:4}}>
+                  <strong>{w.range} — {w.label}:</strong> {w.focus}
+                </div>
+              ))}
+            </div>
+          )}
           {journey.quadrants&&(
             <div>
               <div className="lbl" style={{marginBottom:10}}>Vision Quadrants</div>
@@ -1060,6 +1173,87 @@ function ExportScreen({ go, journey }) {
               <button className="btn btn-g sm" onClick={a}>{l}</button>
             </div>
           ))}
+        </div>
+
+        {/* 90-DAY ROADMAP */}
+        <div className="card afu" style={{padding:28,marginBottom:28,borderColor:"rgba(157,78,221,.2)",background:"radial-gradient(ellipse at top left,rgba(157,78,221,.07) 0%,transparent 60%)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:10}}>
+            <div>
+              <div className="lbl" style={{marginBottom:4,color:"var(--p)"}}>Your 90-Day Clarity Map</div>
+              <h3 style={{fontFamily:"'Playfair Display',serif",fontSize:20,fontWeight:700}}>From scattered → coherent</h3>
+            </div>
+            {!roadmap && !genRoadmap && (
+              <button className="btn btn-p sm" onClick={generateRoadmap}>✦ Generate Roadmap</button>
+            )}
+          </div>
+
+          {genRoadmap && (
+            <div style={{textAlign:"center",padding:"24px 0"}}>
+              <div className="spin" style={{width:36,height:36,margin:"0 auto 12px",border:"3px solid rgba(255,255,255,.1)",borderTopColor:"var(--p)"}}/>
+              <p style={{color:"var(--mt)",fontSize:13}}>Building your clarity map…</p>
+            </div>
+          )}
+
+          {roadmap && (
+            <div style={{display:"flex",flexDirection:"column",gap:20}}>
+              {/* Why it matters */}
+              <div style={{padding:"14px 18px",borderRadius:12,background:"rgba(0,217,255,.06)",border:"1px solid rgba(0,217,255,.15)"}}>
+                <div className="lbl" style={{marginBottom:6}}>Why This Must Happen</div>
+                <p style={{fontFamily:"'Playfair Display',serif",fontSize:15,fontStyle:"italic",lineHeight:1.6,color:"#fff"}}>{roadmap.why}</p>
+              </div>
+
+              {/* 3 key actions */}
+              <div>
+                <div className="lbl" style={{marginBottom:10}}>3 Actions That Actually Move It Forward</div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {(roadmap.actions||[]).map((a,i)=>(
+                    <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",borderRadius:10,background:"rgba(255,255,255,.03)",border:"1px solid rgba(255,255,255,.06)"}}>
+                      <span style={{fontSize:18,fontWeight:700,color:"var(--c)",fontFamily:"'Playfair Display',serif",flexShrink:0,lineHeight:1.3}}>{a.n}.</span>
+                      <div>
+                        <div style={{fontWeight:600,fontSize:14,marginBottom:3}}>{a.title}</div>
+                        <div style={{color:"var(--mt)",fontSize:13,lineHeight:1.5}}>{a.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Weekly milestones */}
+              <div>
+                <div className="lbl" style={{marginBottom:10}}>90-Day Milestones</div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",gap:10}}>
+                  {(roadmap.weeks||[]).map((w,i)=>(
+                    <div key={i} style={{padding:"14px 16px",borderRadius:10,
+                      background: i===0?"rgba(0,217,255,.07)":i===1?"rgba(157,78,221,.07)":"rgba(255,214,10,.07)",
+                      border: `1px solid ${i===0?"rgba(0,217,255,.2)":i===1?"rgba(157,78,221,.2)":"rgba(255,214,10,.2)"}`,
+                    }}>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:".07em",marginBottom:4,
+                        color: i===0?"var(--c)":i===1?"var(--p)":"var(--g)"}}>{w.range} · {w.label.toUpperCase()}</div>
+                      <p style={{color:"var(--mt)",fontSize:12,lineHeight:1.55}}>{w.focus}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reward */}
+              {roadmap.reward && (
+                <div style={{padding:"12px 16px",borderRadius:10,background:"rgba(255,214,10,.06)",border:"1px solid rgba(255,214,10,.15)",display:"flex",gap:10,alignItems:"center"}}>
+                  <span style={{fontSize:18}}>🎁</span>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:700,letterSpacing:".06em",color:"var(--g)",marginBottom:2}}>YOUR 90-DAY REWARD</div>
+                    <div style={{fontSize:13,color:"rgba(238,242,255,.8)"}}>{roadmap.reward}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!roadmap && !genRoadmap && (
+            <p style={{color:"var(--mt)",fontSize:13,lineHeight:1.65}}>
+              Generate your personalized 90-day roadmap — with weekly milestones, 3 key actions, and a reward to keep you moving.
+              <br/>Inspired by the Moonshot Mapping™ methodology by Devon Seegers.
+            </p>
+          )}
         </div>
 
         {/* Social cards */}
@@ -1197,9 +1391,9 @@ function LandingScreen({ go }) {
   const [faqOpen, setFaqOpen] = useState(null);
   const SAMPLE = "I am here to heal the fracture between technology and human connection so that the next generation grows up in a world that amplifies their humanity rather than diminishes it.";
   const STEPS = [
-    {n:"01",e:"🫁",t:"Arrive",    d:"A guided breathing exercise drops you into your body. Leave your head behind. Connect to what you already know."},
-    {n:"02",e:"💬",t:"Reflect",   d:"Five carefully crafted questions unlock the intersection of your passion, genius, and the world's deepest needs."},
-    {n:"03",e:"🚀",t:"Discover",  d:"AI synthesizes everything into your unique moonshot statement, your three genius zones, and one next right step."},
+    {n:"01",e:"🫁",t:"Externalize", d:"A breathing exercise lands you in your body. Then five questions pull out what you've never quite said out loud — the dream you keep circling, the decision you're avoiding, the thing you'd regret not building."},
+    {n:"02",e:"🗺️",t:"Visualize",   d:"See the whole system. Your identity, your energy, your gifts, and the world's deepest needs — mapped side by side. Unconscious patterns become obvious. Self-sabotage loses its camouflage."},
+    {n:"03",e:"⭐",t:"Synthesize",  d:"AI collapses everything into one moonshot statement, three genius zones, and a 90-day roadmap. You don't leave motivated. You leave oriented."},
   ];
   const TESTIMONIALS = [
     {name:"Sarah K.",    role:"Executive Coach, ICF PCC",  q:"Nothing gets to the heart of purpose faster than this. One session and my client had language she'd been searching for for 15 years.", av:"SK"},
