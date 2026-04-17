@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devon Seegers — Project Universe</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#06050a;font-family:'Space Grotesk',sans-serif;overflow:hidden;height:100vh;width:100vw;user-select:none}
+svg{width:100%;height:100%;position:absolute;inset:0;cursor:grab}
+svg.canvas-drag{cursor:grabbing}
+svg.node-drag{cursor:move}
+#tooltip{position:fixed;pointer-events:none;z-index:100;opacity:0;transition:opacity .15s;max-width:300px}
+#tooltip.visible{opacity:1}
+.tti{background:#0e0c16;border:1px solid #28203c;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,0.6)}
+.ttbadge{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:8px}
+.ttbadge.active{background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.3)}
+.ttbadge.wip{background:rgba(212,168,75,.15);color:#d4a84b;border:1px solid rgba(212,168,75,.25)}
+.ttbadge.foundation{background:rgba(39,174,96,.15);color:#27ae60;border:1px solid rgba(39,174,96,.25)}
+.ttbadge.catalog{background:rgba(100,100,120,.15);color:#888;border:1px solid rgba(100,100,120,.2)}
+.ttt{font-size:14px;font-weight:700;color:#f0ecf5;margin-bottom:5px;letter-spacing:-.01em}
+.ttb{font-size:12px;color:#8880a8;line-height:1.55}
+.ttu{font-family:'Space Mono',monospace;font-size:9px;color:#5548a0;margin-top:8px;letter-spacing:.03em;text-decoration:underline;cursor:pointer}
+#controls{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:50}
+.cb{background:#0e0c16;border:1px solid #201830;color:#48406a;font-family:'Space Mono',monospace;font-size:14px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s}
+.cb:hover{background:#1a1430;color:#f0ecf5;border-color:#5040a0}
+#tier-legend{position:fixed;top:20px;right:20px;background:rgba(6,5,10,.9);border:1px solid #18142a;padding:14px 18px;z-index:50;backdrop-filter:blur(8px)}
+.tl-title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#28203a;margin-bottom:12px}
+.tl-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:11px;color:#48406a}
+.tl-row:last-child{margin-bottom:0}
+.tl-dot{border-radius:50%;flex-shrink:0}
+#hint{position:fixed;bottom:68px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#18142a;white-space:nowrap}
+</style>
+</head>
+<body>
+<svg id="map" xmlns="http://www.w3.org/2000/svg"><defs id="dr"></defs><g id="bg"></g><g id="mg"><g id="ll"></g><g id="nl"></g></g></svg>
+
+<div id="tooltip"><div class="tti">
+  <div id="tt-badge"></div>
+  <div class="ttt" id="tt-title"></div>
+  <div class="ttb" id="tt-body"></div>
+  <div class="ttu" id="tt-url"></div>
+</div></div>
+
+<div id="controls">
+  <button class="cb" id="zi">+</button>
+  <button class="cb" id="zr" style="font-size:10px">⌂</button>
+  <button class="cb" id="zo">−</button>
+</div>
+
+<div id="tier-legend">
+  <div class="tl-title">This Season</div>
+  <div class="tl-row"><div class="tl-dot" style="width:14px;height:14px;background:#e74c3c;box-shadow:0 0 8px rgba(231,76,60,.5)"></div>Active priority</div>
+  <div class="tl-row"><div class="tl-dot" style="width:10px;height:10px;background:#6b5fde"></div>Foundation</div>
+  <div class="tl-row"><div class="tl-dot" style="width:8px;height:8px;background:#c4a030;border-radius:2px"></div>In development</div>
+  <div class="tl-row"><div class="tl-dot" style="width:8px;height:8px;background:#3a3450"></div>Catalog / archive</div>
+</div>
+
+<div id="hint">Drag nodes · Scroll to zoom · Click to open link</div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('map');
+const mg=document.getElementById('mg');
+const dr=document.getElementById('dr');
+let vw=window.innerWidth,vh=window.innerHeight,cx=vw/2,cy=vh/2;
+let sc=1,px=0,py=0;
+
+// ─────────────────────────────────────────
+// THREE TIERS:
+//   tier:1  = active priority  (large, bright, pulsing)
+//   tier:2  = foundation       (medium, present)
+//   tier:3  = wip              (small, dashed ring)
+//   tier:4  = catalog/archive  (small, dimmed)
+// ─────────────────────────────────────────
+
+const NODES=[
+  // CENTER
+  {id:'center', label:'DEVON\nSEEGERS', sub:'devonseegers.com', tier:0,
+   r:68, col:'#a78bfa', str:'#6d55d1', angle:0, dist:0,
+   img:'https://images.squarespace-cdn.com/content/v1/66ad2b214b99d640a6a1968a/82269644-95c8-464b-991a-80d681fb357c/Frequency_1.jpg',
+   desc:'Coach · musician · AI architect. One through line: move people, unite, give hope.',
+   href:'https://devonseegers.com'},
+
+  // ── TIER 1: ACTIVE PRIORITIES ──
+  {id:'reality', label:'REALITY\nDISTORTION', sub:'⚡ Active · @reality.distortion', tier:1,
+   r:60, col:'#e74c3c', str:'#c0392b', angle:-85, dist:265,
+   desc:'Electronic indie duo with Linnea. Ceasefire EP in progress. The only active band.',
+   href:'https://instagram.com/reality.distortion'},
+
+  {id:'blue', label:'BLUE\nAI LABEL', sub:'Modular Artist OS', tier:1,
+   r:54, col:'#3498db', str:'#2070a8', angle:-40, dist:268,
+   desc:'Modular AI skill agents for the full artist backend: PR · sync · release · analytics · CRM · funding. Testing on overnight-success. Next: first external client.',
+   href:null},
+
+  {id:'moonshot', label:'DEVON\nSEEGERS.COM', sub:'Moonshot Mapping · Coaching', tier:1,
+   r:54, col:'#d4a84b', str:'#a07820', angle:200, dist:265,
+   img:'https://images.squarespace-cdn.com/content/v1/66ad2b214b99d640a6a1968a/82269644-95c8-464b-991a-80d681fb357c/Frequency_1.jpg',
+   desc:'"You\'re the instrument. I\'m the producer." Devon\'s coaching hub. Offers Moonshot Mapping — 2-hour sessions that delete Imposter Syndrome. Scaling through Devon AI.',
+   href:'https://devonseegers.com'},
+
+  // ── TIER 2: FOUNDATION ──
+  {id:'healed', label:'75 HEALED', sub:'75healed.com', tier:2,
+   r:44, col:'#27ae60', str:'#1a7840', angle:20, dist:258,
+   desc:'75-day coherence challenge. 5 practices from 49 years of flow research. The nervous system foundation everything else runs on.',
+   href:'https://75healed.com'},
+
+  {id:'blessings', label:'BLESSINGS\nNOT BOMBS', sub:'blessingsnotbombs.com', tier:2,
+   r:40, col:'#1abc9c', str:'#12876e', angle:72, dist:252,
+   desc:'AI blessing generator. Pierre Pradervand\'s Gentle Art of Blessing — made accessible.',
+   href:'https://blessingsnotbombs.com'},
+
+  {id:'yeshua', label:'CALL ME\nYESHUA', sub:'Book · Amazon', tier:2,
+   r:44, col:'#e67e22', str:'#b06010', angle:130, dist:258,
+   img:'https://m.media-amazon.com/images/P/B0F3FR6TFF.01._SCLZZZZZZZ_.jpg',
+   desc:'Published book. Fictional courtroom drama — AI trained on sacred texts believes it IS Yeshua. Co-authored with Rachel Greenberg. Film adaptation in development.',
+   href:'https://amazon.com/dp/B0F3FR6TFF'},
+
+  // ── TIER 4: CATALOG (one quiet node) ──
+  {id:'music-catalog', label:'MUSIC\nCATALOG', sub:'Body of work · SoundCloud', tier:4,
+   r:34, col:'#554a6a', str:'#3a3050', angle:-128, dist:258,
+   desc:'Solo releases (Holiday EP, Natureframe 2017) · Client productions (Athena Burke, Shannon Tehya, Gordon — Home) · Past project: Bathrobe Robots.',
+   href:'https://on.soundcloud.com/oJMIAD0YIujq1gPYVJ'},
+];
+
+// ── TIER 3: WIP sub-nodes ──
+const WIPS=[
+  {id:'wip-app', label:'WHATS MY\nMOONSHOT.AI', sub:'App WIP', parentId:'moonshot',
+   childAngle:170, childDist:145, r:32, col:'#d4a84b',
+   desc:'AI app to find the 4% of actions that generate 80% of outcomes.',
+   href:'https://devonseegers-ops.github.io/whatsmymoonshot'},
+
+  {id:'wip-book', label:'2ND\nRENAISSANCE', sub:'Book WIP', parentId:'moonshot',
+   childAngle:200, childDist:148, r:30, col:'#d4a84b',
+   desc:'Moonshots of the 2nd Renaissance — parallels between the historical Renaissance and the AI moment.',
+   href:null},
+
+  {id:'wip-series', label:'BEHIND THE\nMOONSHOT', sub:'Series WIP', parentId:'moonshot',
+   childAngle:228, childDist:140, r:28, col:'#d4a84b',
+   desc:'Interview series — leaders who went all-in on their moonshot.',
+   href:null},
+
+  {id:'wip-film', label:'THE FILM', sub:'WIP Collab', parentId:'yeshua',
+   childAngle:98, childDist:138, r:28, col:'#e67e22',
+   desc:'Film adaptation of Call Me Yeshua. In development as a collaborative project.',
+   href:null},
+];
+
+const positions={};
+
+function initPositions(){
+  positions['center']={x:cx,y:cy};
+  NODES.filter(n=>n.id!=='center').forEach(n=>{
+    const a=n.angle*Math.PI/180;
+    positions[n.id]={x:cx+Math.cos(a)*n.dist, y:cy+Math.sin(a)*n.dist};
+  });
+  WIPS.forEach(w=>{
+    const par=NODES.find(n=>n.id===w.parentId);
+    const pa=par.angle*Math.PI/180;
+    const ppx=cx+Math.cos(pa)*par.dist, ppy=cy+Math.sin(pa)*par.dist;
+    const ca=w.childAngle*Math.PI/180;
+    positions[w.id]={x:ppx+Math.cos(ca)*w.childDist, y:ppy+Math.sin(ca)*w.childDist};
+  });
+}
+
+function se(tag,a={}){const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);return e;}
+
+function buildDefs(){
+  // Shadow
+  const f=se('filter',{id:'sh'});
+  f.appendChild(se('feDropShadow',{dx:'0',dy:'2',stdDeviation:'8','flood-color':'rgba(0,0,0,0.9)'}));
+  dr.appendChild(f);
+
+  // Glow filter for tier-1
+  const fg=se('filter',{id:'glow',x:'-30%',y:'-30%',width:'160%',height:'160%'});
+  const blur=se('feGaussianBlur',{stdDeviation:'6',result:'blur'});
+  const comp=se('feComposite',{in:'SourceGraphic',in2:'blur',operator:'over'});
+  fg.appendChild(blur); fg.appendChild(comp); dr.appendChild(fg);
+
+  // Gradients
+  const grads={
+    'g-c':'#2e2050,#0d0820',    // center
+    'g-1r':'#4a1010,#1a0505',   // tier1 red
+    'g-1b':'#082840,#020d18',   // tier1 blue
+    'g-1g':'#2a1a04,#0d0800',   // tier1 gold
+    'g-2gr':'#0d2e18,#040f08',  // tier2 green
+    'g-2t':'#042820,#020e0c',   // tier2 teal
+    'g-2o':'#2e1804,#0e0800',   // tier2 orange
+    'g-2p':'#1a0830,#080410',   // tier2 purple
+    'g-4':'#14101e,#080610',    // tier4
+  };
+  Object.entries(grads).forEach(([id,v])=>{
+    const[c1,c2]=v.split(',');
+    const rg=se('radialGradient',{id,cx:'50%',cy:'35%',r:'70%'});
+    [[c1,'0%'],[c2,'100%']].forEach(([c,o])=>{const s=se('stop',{offset:o,'stop-color':c});rg.appendChild(s);});
+    dr.appendChild(rg);
+  });
+
+  // Clip paths
+  [...NODES].forEach(n=>{
+    const cp=se('clipPath',{id:`cp-${n.id}`});
+    cp.appendChild(se('circle',{cx:'0',cy:'0',r:String(n.r-4)}));
+    dr.appendChild(cp);
+  });
+
+  // WIP hatch
+  const pat=se('pattern',{id:'wip-h',patternUnits:'userSpaceOnUse',width:'7',height:'7',patternTransform:'rotate(45)'});
+  pat.appendChild(se('line',{x1:'0',y1:'0',x2:'0',y2:'7',stroke:'rgba(212,168,75,0.1)','stroke-width':'3'}));
+  dr.appendChild(pat);
+}
+
+const nodeGrad={
+  center:'g-c',
+  reality:'g-1r', blue:'g-1b', moonshot:'g-1g',
+  healed:'g-2gr', blessings:'g-2t', yeshua:'g-2o',
+  'music-catalog':'g-4',
+};
+
+function buildNode(n,x,y){
+  const g=se('g',{id:`ng-${n.id}`,'data-id':n.id});
+
+  // Tier-1: outer glow ring
+  if(n.tier===1){
+    const gr=se('circle',{cx:String(x),cy:String(y),r:String(n.r+18),
+      fill:'none',stroke:n.col,'stroke-width':'1',opacity:'0.12'});
+    g.appendChild(gr);
+    const gr2=se('circle',{cx:String(x),cy:String(y),r:String(n.r+9),
+      fill:'none',stroke:n.col,'stroke-width':'1.5',opacity:'0.18',
+      'stroke-dasharray':'3 4'});
+    g.appendChild(gr2);
+  }
+
+  // Tier-4: dim everything
+  if(n.tier===4) g.setAttribute('opacity','0.55');
+
+  // Main circle
+  const grad=nodeGrad[n.id]||'g-c';
+  const bg=se('circle',{cx:String(x),cy:String(y),r:String(n.r),
+    fill:`url(#${grad})`,
+    stroke:n.col,'stroke-width': n.tier===1?'2':n.tier===4?'0.8':'1.5',
+    filter:'url(#sh)'});
+  g.appendChild(bg);
+
+  // Image overlay
+  if(n.img){
+    const wrap=se('g',{transform:`translate(${x},${y})`,'clip-path':`url(#cp-${n.id})`});
+    const im=se('image',{x:String(-(n.r-4)),y:String(-(n.r-4)),width:String((n.r-4)*2),height:String((n.r-4)*2),
+      preserveAspectRatio:'xMidYMid slice',opacity:'0.22'});
+    im.setAttribute('href',n.img); wrap.appendChild(im); g.appendChild(wrap);
+    g.appendChild(se('circle',{cx:String(x),cy:String(y),r:String(n.r-4),fill:`url(#${grad})`,opacity:'0.65'}));
+  }
+
+  // Color rim
+  g.appendChild(se('circle',{cx:String(x),cy:String(y),r:String(n.r-5),
+    fill:'none',stroke:n.col,'stroke-width':'0.5',opacity: n.tier===4?'0.1':'0.15'}));
+
+  // Labels
+  const lines=n.label.split('\n');
+  const lh=n.r*0.33, th=(lines.length-1)*lh, ss=n.sub?-5:0;
+  const fs=n.r>60?13:n.r>48?11:n.r>36?10:9;
+  const fc=n.tier===4?'#6a6080':'#f0ecf5';
+  lines.forEach((line,i)=>{
+    const t=se('text',{x:String(x),y:String(y-th/2+i*lh+ss),
+      'text-anchor':'middle','dominant-baseline':'middle',
+      fill:fc,'font-family':'Space Grotesk, sans-serif',
+      'font-weight':'700','font-size':String(fs),'letter-spacing':'0.06em',
+      style:'pointer-events:none'});
+    t.textContent=line; g.appendChild(t);
+  });
+
+  if(n.sub){
+    const sub=se('text',{x:String(x),y:String(y+lines.length*lh/2+4),
+      'text-anchor':'middle','dominant-baseline':'middle',
+      fill:n.tier===4?'#443858':n.col,
+      'font-family':'Space Mono, monospace','font-size':'7','letter-spacing':'0.04em',
+      opacity:n.tier===4?'0.5':'0.65',style:'pointer-events:none'});
+    sub.textContent=n.sub; g.appendChild(sub);
+  }
+
+  // Tier-1 active dot
+  if(n.tier===1){
+    g.appendChild(se('circle',{cx:String(x+n.r*0.7),cy:String(y-n.r*0.7),r:'5',
+      fill:n.col,opacity:'0.9',filter:'url(#sh)'}));
+  }
+
+  attachDrag(g,n,bg);
+  return g;
+}
+
+function buildWip(w,x,y){
+  const g=se('g',{id:`ng-${w.id}`,'data-id':w.id});
+
+  // Dashed ring
+  g.appendChild(se('circle',{cx:String(x),cy:String(y),r:String(w.r+5),
+    fill:'none',stroke:w.col,'stroke-width':'1',opacity:'0.2','stroke-dasharray':'4 3'}));
+
+  // Body
+  g.appendChild(se('circle',{cx:String(x),cy:String(y),r:String(w.r),
+    fill:'url(#wip-h)',stroke:w.col,'stroke-width':'1',filter:'url(#sh)'}));
+  g.appendChild(se('circle',{cx:String(x),cy:String(y),r:String(w.r),
+    fill:w.parentId==='moonshot'?'url(#g-1g)':'url(#g-2o)',opacity:'0.5'}));
+
+  // WIP badge
+  const bx=x+w.r*0.65, by=y-w.r*0.65;
+  g.appendChild(se('rect',{x:String(bx-13),y:String(by-6),width:'26',height:'12',rx:'5',fill:'#c4a030',opacity:'0.85'}));
+  const bt=se('text',{x:String(bx),y:String(by),'text-anchor':'middle','dominant-baseline':'middle',
+    fill:'#0a0800','font-family':'Space Mono, monospace','font-weight':'700','font-size':'7',
+    'letter-spacing':'0.05em',style:'pointer-events:none'});
+  bt.textContent='WIP'; g.appendChild(bt);
+
+  // Label
+  const lines=w.label.split('\n');
+  const lh=w.r*0.34, th=(lines.length-1)*lh;
+  lines.forEach((line,i)=>{
+    const t=se('text',{x:String(x),y:String(y-th/2+i*lh-(w.sub?3:0)),
+      'text-anchor':'middle','dominant-baseline':'middle',
+      fill:'#d8d0e8','font-family':'Space Grotesk, sans-serif',
+      'font-weight':'700','font-size':'8.5','letter-spacing':'0.05em',
+      style:'pointer-events:none'});
+    t.textContent=line; g.appendChild(t);
+  });
+
+  attachDrag(g,w,g.children[1]);
+  return g;
+}
+
+function attachDrag(g,node,bg){
+  let dx=0,dy=0,moved=false;
+  g.style.cursor=node.href?'pointer':'move';
+
+  g.addEventListener('mousedown',e=>{
+    e.stopPropagation();
+    dx=e.clientX; dy=e.clientY; moved=false;
+    svg.classList.add('node-drag');
+    const mm=ev=>{
+      const ddx=ev.clientX-dx, ddy=ev.clientY-dy;
+      if(!moved&&Math.sqrt(ddx*ddx+ddy*ddy)>4) moved=true;
+      if(moved){
+        hideTT();
+        positions[node.id].x+=ddx/sc; positions[node.id].y+=ddy/sc;
+        dx=ev.clientX; dy=ev.clientY; render();
+      }
+    };
+    const mu=ev=>{
+      svg.classList.remove('node-drag');
+      window.removeEventListener('mousemove',mm);
+      window.removeEventListener('mouseup',mu);
+      if(!moved&&node.href) window.open(node.href,'_blank');
+    };
+    window.addEventListener('mousemove',mm);
+    window.addEventListener('mouseup',mu);
+  });
+
+  g.addEventListener('mouseenter',e=>{
+    if(bg) bg.setAttribute('stroke-width', node.tier===1?'3':'2');
+    showTT(e,node);
+  });
+  g.addEventListener('mousemove',moveTT);
+  g.addEventListener('mouseleave',()=>{
+    if(bg) bg.setAttribute('stroke-width', node.tier===1?'2':node.tier===4?'0.8':'1.5');
+    hideTT();
+  });
+}
+
+function render(){
+  document.getElementById('ll').innerHTML='';
+  document.getElementById('nl').innerHTML='';
+  document.getElementById('bg').innerHTML='';
+
+  const bgL=document.getElementById('bg');
+  const ll=document.getElementById('ll');
+  const nl=document.getElementById('nl');
+
+  // Stars — fewer, quieter
+  for(let i=0;i<80;i++){
+    bgL.appendChild(se('circle',{
+      cx:String(Math.random()*vw*2.4-vw*.7),cy:String(Math.random()*vh*2.4-vh*.7),
+      r:String(Math.random()*.9+0.2),
+      fill:`rgba(150,130,200,${(Math.random()*.07+.01).toFixed(3)})`}));
+  }
+
+  // Zone arcs — very subtle
+  const ZONES=[
+    {sa:-140,ea:-5, col:'rgba(231,76,60,0.03)', border:'rgba(231,76,60,0.06)', label:'MUSIC  ·  AI'},
+    {sa:-5, ea:155, col:'rgba(39,174,96,0.025)',border:'rgba(39,174,96,0.05)',  label:'SPIRIT  ·  SERVICE'},
+    {sa:155,ea:290, col:'rgba(212,168,75,0.025)',border:'rgba(212,168,75,0.05)',label:'COACHING  ·  BRAND'},
+  ];
+  const R=460;
+  ZONES.forEach(z=>{
+    const sa=z.sa*Math.PI/180, ea=z.ea*Math.PI/180;
+    const x1=cx+Math.cos(sa)*R, y1=cy+Math.sin(sa)*R;
+    const x2=cx+Math.cos(ea)*R, y2=cy+Math.sin(ea)*R;
+    const lg=(z.ea-z.sa)>180?1:0;
+    bgL.appendChild(se('path',{d:`M ${cx} ${cy} L ${x1} ${y1} A ${R} ${R} 0 ${lg} 1 ${x2} ${y2} Z`,fill:z.col}));
+    // Zone border arc only
+    bgL.appendChild(se('path',{d:`M ${x1} ${y1} A ${R} ${R} 0 ${lg} 1 ${x2} ${y2}`,
+      fill:'none',stroke:z.border,'stroke-width':'1'}));
+    // Label at midpoint
+    const mid=((z.sa+z.ea)/2)*Math.PI/180;
+    const lr=R*0.74, lx=cx+Math.cos(mid)*lr, ly=cy+Math.sin(mid)*lr;
+    const rot=(z.sa+z.ea)/2, adj=rot>90&&rot<270?rot+180:rot;
+    const lt=se('text',{x:String(lx),y:String(ly),'text-anchor':'middle','dominant-baseline':'middle',
+      fill:z.border,'font-family':'Space Mono, monospace','font-size':'9','letter-spacing':'0.22em',
+      transform:`rotate(${adj},${lx},${ly})`,style:'pointer-events:none'});
+    lt.textContent=z.label; bgL.appendChild(lt);
+  });
+
+  const cp=positions['center'];
+
+  // Lines — center to main nodes
+  NODES.filter(n=>n.id!=='center').forEach(n=>{
+    const np=positions[n.id];
+    const op = n.tier===1?0.35 : n.tier===2?0.18 : 0.08;
+    const sw = n.tier===1?'2' : n.tier===2?'1.2' : '0.8';
+    const mx=(cp.x+np.x)/2-(np.y-cp.y)*0.15;
+    const my=(cp.y+np.y)/2+(np.x-cp.x)*0.15;
+    ll.appendChild(se('path',{d:`M ${cp.x} ${cp.y} Q ${mx} ${my} ${np.x} ${np.y}`,
+      stroke:n.col,'stroke-width':sw,fill:'none',opacity:String(op)}));
+  });
+
+  // Lines — parent to WIPs (very subtle dashed)
+  WIPS.forEach(w=>{
+    const par=NODES.find(n=>n.id===w.parentId);
+    const pp=positions[par.id], wp=positions[w.id];
+    const mx=(pp.x+wp.x)/2-(wp.y-pp.y)*0.1;
+    const my=(pp.y+wp.y)/2+(wp.x-pp.x)*0.1;
+    ll.appendChild(se('path',{d:`M ${pp.x} ${pp.y} Q ${mx} ${my} ${wp.x} ${wp.y}`,
+      stroke:w.col,'stroke-width':'1',fill:'none',opacity:'0.18','stroke-dasharray':'4 3'}));
+  });
+
+  // Draw WIPs first (below main nodes)
+  WIPS.forEach(w=>{
+    const p=positions[w.id];
+    nl.appendChild(buildWip(w,p.x,p.y));
+  });
+
+  // Draw tier 4 next
+  NODES.filter(n=>n.tier===4).forEach(n=>{
+    const p=positions[n.id];
+    nl.appendChild(buildNode(n,p.x,p.y));
+  });
+
+  // Draw tier 2
+  NODES.filter(n=>n.tier===2).forEach(n=>{
+    const p=positions[n.id];
+    nl.appendChild(buildNode(n,p.x,p.y));
+  });
+
+  // Draw tier 1 on top
+  NODES.filter(n=>n.tier===1).forEach(n=>{
+    const p=positions[n.id];
+    nl.appendChild(buildNode(n,p.x,p.y));
+  });
+
+  // Center last
+  nl.appendChild(buildNode(NODES.find(n=>n.id==='center'),cp.x,cp.y));
+}
+
+// Tooltip
+const tt=document.getElementById('tooltip');
+function showTT(e,n){
+  const badge=document.getElementById('tt-badge');
+  const tier=n.tier??3;
+  if(tier===1){badge.className='ttbadge active';badge.textContent='● Active priority';}
+  else if(tier===2){badge.className='ttbadge foundation';badge.textContent='◆ Foundation';}
+  else if(tier===3||n.wip){badge.className='ttbadge wip';badge.textContent='◐ In development';}
+  else if(tier===4){badge.className='ttbadge catalog';badge.textContent='○ Catalog';}
+  else{badge.className='';badge.textContent='';}
+  document.getElementById('tt-title').textContent=(n.label||'').replace('\n',' ');
+  document.getElementById('tt-body').textContent=n.desc||'';
+  const u=document.getElementById('tt-url');
+  if(n.href){u.textContent=n.href.replace('https://','');u.onclick=()=>window.open(n.href,'_blank');}
+  else{u.textContent='';u.onclick=null;}
+  tt.classList.add('visible'); moveTT(e);
+}
+function moveTT(e){
+  let tx=e.clientX+14, ty=e.clientY-14;
+  if(tx+310>vw) tx=e.clientX-310-14;
+  if(ty+160>vh) ty=e.clientY-160-14;
+  tt.style.left=tx+'px'; tt.style.top=ty+'px';
+}
+function hideTT(){tt.classList.remove('visible');}
+
+// Canvas pan + zoom
+let cpd=false,clx=0,cly=0;
+svg.addEventListener('mousedown',e=>{if(e.target.closest('[data-id]'))return;cpd=true;clx=e.clientX;cly=e.clientY;svg.classList.add('canvas-drag');});
+window.addEventListener('mousemove',e=>{if(!cpd)return;px+=e.clientX-clx;py+=e.clientY-cly;clx=e.clientX;cly=e.clientY;applyT();});
+window.addEventListener('mouseup',()=>{cpd=false;svg.classList.remove('canvas-drag');});
+svg.addEventListener('wheel',e=>{e.preventDefault();const d=e.deltaY>0?.88:1.13;const ns=Math.min(Math.max(sc*d,.28),3.5);px=e.clientX-(e.clientX-px)*(ns/sc);py=e.clientY-(e.clientY-py)*(ns/sc);sc=ns;applyT();},{passive:false});
+document.getElementById('zi').onclick=()=>{sc=Math.min(sc*1.2,3.5);applyT();};
+document.getElementById('zo').onclick=()=>{sc=Math.max(sc*.8,.28);applyT();};
+document.getElementById('zr').onclick=()=>{sc=1;px=0;py=0;applyT();};
+function applyT(){mg.setAttribute('transform',`translate(${px},${py}) scale(${sc})`);}
+
+// Touch
+let ltd=0,ctd=false,ctx_=0,cty_=0;
+svg.addEventListener('touchstart',e=>{if(e.target.closest('[data-id]'))return;if(e.touches.length===1){ctd=true;ctx_=e.touches[0].clientX;cty_=e.touches[0].clientY;}else if(e.touches.length===2){const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;ltd=Math.sqrt(dx*dx+dy*dy);}},{passive:true});
+svg.addEventListener('touchmove',e=>{e.preventDefault();if(e.touches.length===1&&ctd){px+=e.touches[0].clientX-ctx_;py+=e.touches[0].clientY-cty_;ctx_=e.touches[0].clientX;cty_=e.touches[0].clientY;applyT();}else if(e.touches.length===2){const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;const d=Math.sqrt(dx*dx+dy*dy);sc=Math.min(Math.max(sc*(d/ltd),.28),3.5);ltd=d;applyT();}},{passive:false});
+svg.addEventListener('touchend',()=>{ctd=false;});
+
+window.addEventListener('resize',()=>{vw=window.innerWidth;vh=window.innerHeight;cx=vw/2;cy=vh/2;initPositions();render();applyT();});
+
+buildDefs();
+initPositions();
+render();
+applyT();
+</script>
+</body>
+</html>
