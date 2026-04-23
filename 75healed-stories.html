@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>75HEALED · Story Selling</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #080c09;
+    --surface: #0f1a11;
+    --surface2: #162019;
+    --border: #1e3020;
+    --green: #4dff7c;
+    --green-dim: #2a8c44;
+    --green-glow: rgba(77,255,124,0.08);
+    --text: #e8f0e9;
+    --text-dim: #6b8a6f;
+    --text-muted: #3d5440;
+    --red: #ff6b6b;
+    --gold: #f0c060;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 20px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--green);
+    letter-spacing: -0.5px;
+  }
+  .wordmark span { color: var(--text-dim); font-style: italic; font-size: 18px; }
+  .day-counter {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--green-dim);
+    background: var(--green-glow);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+
+  /* RULE STRIP */
+  .rule-strip {
+    margin: 16px 20px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    font-family: 'DM Mono', monospace;
+  }
+  .rule-strip strong { color: var(--green); }
+
+  /* SLOT TABS */
+  .slots-nav {
+    display: flex;
+    gap: 6px;
+    padding: 16px 20px 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .slots-nav::-webkit-scrollbar { display: none; }
+  .slot-tab {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .slot-tab .day { font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+  .slot-tab .time { font-size: 12px; color: var(--text-dim); display: block; }
+  .slot-tab.active {
+    background: var(--green-glow);
+    border-color: var(--green-dim);
+    color: var(--green);
+  }
+  .slot-tab.active .time { color: var(--green); }
+
+  /* SLOT SECTIONS */
+  .slot-section { display: none; padding: 16px 20px 0; }
+  .slot-section.active { display: block; }
+
+  .slot-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+  }
+  .slot-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .slot-title .action-tag {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-style: normal;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+  .delete-badge {
+    flex-shrink: 0;
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    color: var(--red);
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 4px 8px;
+    border-radius: 6px;
+    line-height: 1.3;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  /* STORY CARDS */
+  .story-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .story-card:last-of-type { margin-bottom: 0; }
+
+  .story-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    color: var(--green-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .story-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .story-body {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-line;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+  }
+  .story-body .swipe {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+  }
+  .story-body strong { font-weight: 600; color: var(--text); }
+  .story-body .highlight { color: var(--green); }
+  .story-body .check { color: var(--green); }
+  .story-body .cross { color: var(--red); opacity: 0.8; }
+
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .copy-btn:active { transform: scale(0.98); }
+  .copy-btn.copied {
+    border-color: var(--green-dim);
+    color: var(--green);
+    background: var(--green-glow);
+  }
+  .copy-icon { font-size: 14px; }
+
+  /* DM SCRIPT */
+  .dm-block {
+    margin-top: 14px;
+    background: #0a1a0e;
+    border: 1px solid #1a3a20;
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .dm-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    color: var(--green-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .dm-body {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #7a9a7f;
+    white-space: pre-line;
+    font-family: 'DM Mono', monospace;
+  }
+  .dm-copy-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid #1a3a20;
+    border-radius: 8px;
+    color: var(--green-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  .dm-copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+  /* POLL BLOCK */
+  .poll-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-top: 10px;
+  }
+  .poll-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .poll-question {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+  .poll-option {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* INSTRUCTION BLOCK */
+  .instruction-block {
+    background: rgba(240,192,96,0.04);
+    border: 1px solid rgba(240,192,96,0.15);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: #a08040;
+    line-height: 1.6;
+    font-family: 'DM Mono', monospace;
+  }
+  .instruction-block strong { color: var(--gold); }
+
+  /* NOTHING ELSE WARNING */
+  .nothing-else {
+    text-align: center;
+    padding: 12px;
+    margin-top: 12px;
+    background: rgba(255,107,107,0.04);
+    border: 1px dashed rgba(255,107,107,0.2);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,107,107,0.6);
+    letter-spacing: 0.5px;
+  }
+
+  /* FOOTER */
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 12px 20px 20px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .footer-slot {
+    flex: 1;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    padding: 6px 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .footer-slot .f-day { display: block; font-size: 9px; }
+  .footer-slot .f-time { display: block; font-size: 10px; color: var(--text-dim); }
+  .footer-slot.active {
+    border-color: var(--green-dim);
+    background: var(--green-glow);
+    color: var(--green);
+  }
+  .footer-slot.active .f-time { color: var(--green); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="wordmark">75HEALED <span>· story system</span></div>
+  <div class="day-counter">DAY 29+</div>
+</div>
+
+<div class="rule-strip">
+  <strong>Nick Protocol:</strong> Max 6 stories/day · Post at 9:30am · Post NOTHING after 4-part sell for 24hrs · Delete old stories before each sequence · Max 1-2 external links/week · DM keyword: <strong>REGULATED</strong>
+</div>
+
+<div class="slots-nav">
+  <div class="slot-tab active" onclick="showSlot('mon-am')"><span class="day">MON</span><span class="time">9:30am</span></div>
+  <div class="slot-tab" onclick="showSlot('mon-pm')"><span class="day">MON</span><span class="time">6:00pm</span></div>
+  <div class="slot-tab" onclick="showSlot('tue-am')"><span class="day">TUE</span><span class="time">9:30am</span></div>
+  <div class="slot-tab" onclick="showSlot('wed-am')"><span class="day">WED</span><span class="time">9:30am</span></div>
+  <div class="slot-tab" onclick="showSlot('wed-pm')"><span class="day">WED</span><span class="time">6:00pm</span></div>
+  <div class="slot-tab" onclick="showSlot('thu-am')"><span class="day">THU</span><span class="time">9:30am</span></div>
+  <div class="slot-tab" onclick="showSlot('fri-am')"><span class="day">FRI</span><span class="time">9:30am</span></div>
+</div>
+
+<!-- MON 9:30am -->
+<div class="slot-section active" id="slot-mon-am">
+  <div class="slot-header">
+    <div class="slot-title">Stories 1–3
+      <span class="action-tag">DELETE ALL → POST TOGETHER → ADD QUESTION BOX TO STORY 1</span>
+    </div>
+    <div class="delete-badge">🗑 DELETE<br>FIRST</div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 1 · Q&A Invite</div>
+    <div class="story-body" id="s1">Day 29.
+
+The practices are holding.
+
+What's your biggest obstacle to staying regulated right now?
+
+<span class="swipe">[Add question box sticker here]</span></div>
+    <button class="copy-btn" onclick="copyText('s1', this)"><span class="copy-icon">⊕</span> Copy Story 1</button>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 2 · Planted Q&A</div>
+    <div class="story-body" id="s2">Someone asked: "How do you stay consistent when life gets loud?"
+
+Honest answer: you don't always.
+
+I woke up at 2:30am this week. Felt depleted. Went for a walk anyway. Did the breathing. Journaled.
+
+The practice doesn't require you to feel good. It just requires you to show up.
+
+That's the whole thing.
+<span class="swipe">[Swipe →]</span></div>
+    <button class="copy-btn" onclick="copyText('s2', this)"><span class="copy-icon">⊕</span> Copy Story 2</button>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 3 · Bridge</div>
+    <div class="story-body" id="s3">What I've noticed at Day 29:
+
+The days I least want to do the practice are the days it matters most.
+
+The nervous system doesn't care about your motivation.
+
+It responds to what it's given.
+
+Give it coherence. Every day. Watch what happens.
+
+#75healed</div>
+    <button class="copy-btn" onclick="copyText('s3', this)"><span class="copy-icon">⊕</span> Copy Story 3</button>
+  </div>
+</div>
+
+<!-- MON 6:00pm -->
+<div class="slot-section" id="slot-mon-pm">
+  <div class="slot-header">
+    <div class="slot-title">Story 4 · Poll
+      <span class="action-tag">DELETE ALL → POST POLL ONLY → NOTHING ELSE TONIGHT</span>
+    </div>
+    <div class="delete-badge">🗑 DELETE<br>FIRST</div>
+  </div>
+
+  <div class="instruction-block">
+    <strong>How to post:</strong> Post a high-quality photo of yourself. Add a poll sticker on top. After the next sequence goes up, go back and like every comment on this post.
+  </div>
+
+  <div class="poll-block">
+    <div class="poll-label">POLL STICKER TEXT</div>
+    <div class="poll-question" id="s4-question">Does social media dysregulate your nervous system?</div>
+    <div class="poll-option">A · Yes, constantly</div>
+    <div class="poll-option">B · Only certain apps</div>
+    <div class="poll-option">C · I've learned to manage it</div>
+    <button class="copy-btn" onclick="copyRaw('Does social media dysregulate your nervous system?', this)" style="margin-top:12px"><span class="copy-icon">⊕</span> Copy Poll Question</button>
+  </div>
+</div>
+
+<!-- TUE 9:30am -->
+<div class="slot-section" id="slot-tue-am">
+  <div class="slot-header">
+    <div class="slot-title">Stories 5–8 · 4-Part Sell
+      <span class="action-tag">DELETE ALL → POST 4 TOGETHER → NOTHING FOR 24HRS</span>
+    </div>
+    <div class="delete-badge">🗑 DELETE<br>FIRST</div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 5 · Authority (1/4)</div>
+    <div class="story-body" id="s5">Day 29.
+
+I started 75HEALED while I was still sick.
+
+I put it live the week we bombed Iran.
+
+Something about starting from that place — body fragile, world heavy — made the commitment feel less like a challenge and more like medicine.
+
+It's compounding.
+<span class="swipe">[Swipe →]</span></div>
+    <button class="copy-btn" onclick="copyText('s5', this)"><span class="copy-icon">⊕</span> Copy Story 5</button>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 6 · Resonance (2/4)</div>
+    <div class="story-body" id="s6">Survival mode disguised as productivity.
+
+We don't always recognize it.
+
+✗ Phone before coffee. Every morning.
+✗ Good ideas everywhere. God ideas nowhere.
+✗ Creating output. Not creating meaning.
+✗ Too depleted to be present for the people you love.
+✗ Reacting to chaos with more chaos.
+
+It is no sign of health to be adjusted to a profoundly sick society.
+<span class="swipe">[Swipe →]</span></div>
+    <button class="copy-btn" onclick="copyText('s6', this)"><span class="copy-icon">⊕</span> Copy Story 6</button>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 7 · Hope (3/4)</div>
+    <div class="story-body" id="s7">Creation mode is a virtuous loop.
+
+The more I feel good, the more I move.
+The more I sleep, the more I want to train.
+The more I train, the more I want to be social.
+
+✓ God ideas finding you in the stillness.
+✓ Sitting down with a guitar — and a song comes through.
+✓ AI amplifying what's already alive in you.
+✓ Building something that actually matters.
+
+Life serves those who serve life.
+<span class="swipe">[Swipe →]</span></div>
+    <button class="copy-btn" onclick="copyText('s7', this)"><span class="copy-icon">⊕</span> Copy Story 7</button>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 8 · CTA (4/4)</div>
+    <div class="story-body" id="s8">75 HEALED.
+
+75 days. 5 practices.
+
+Not a productivity challenge.
+
+A coherence challenge.
+
+$75/month — DM me REGULATED to join.
+
+Day 29. Doors open.</div>
+    <button class="copy-btn" onclick="copyText('s8', this)"><span class="copy-icon">⊕</span> Copy Story 8</button>
+  </div>
+
+  <div class="dm-block">
+    <div class="dm-label">DM Reply · When someone sends "REGULATED"</div>
+    <div class="dm-body" id="dm-reply">Hey — here's the link: [Skool link]
+$75/month · 75 days · 5 practices.
+Day 29 inside. It's been serving me so deeply.
+Let me know if you have questions. — Devon</div>
+    <button class="dm-copy-btn" onclick="copyText('dm-reply', this)"><span>⊕</span> Copy DM Reply</button>
+  </div>
+
+  <div class="nothing-else">⚠ POST NOTHING ELSE FOR 24 HOURS AFTER THIS SEQUENCE</div>
+</div>
+
+<!-- WED 9:30am -->
+<div class="slot-section" id="slot-wed-am">
+  <div class="slot-header">
+    <div class="slot-title">Stories 9–10 · Teaching
+      <span class="action-tag">POST TOGETHER · RE-UPLOAD DON'T RESHARE TAGS</span>
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 9 · The Science (1/2)</div>
+    <div class="story-body" id="s9">The nervous system is not broken.
+
+It is responding to what it's been given.
+
+49 years of peer-reviewed flow and coherence research says measurable physiological states respond to measurable interventions.
+
+Not willpower. Precision.
+
+That's 75HEALED.
+<span class="swipe">[Swipe →]</span></div>
+    <button class="copy-btn" onclick="copyText('s9', this)"><span class="copy-icon">⊕</span> Copy Story 9</button>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 10 · The Protocol (2/2)</div>
+    <div class="story-body" id="s10">5 practices. Every day. 75 days.
+
+1. Coherence breathing (5.5 in / 5.5 out)
+2. Embodied movement — attention inward
+3. Coherence journaling
+4. 60-min digital window every morning
+5. Consciousness reading
+
+Miss one? Back to Day 1.
+
+The restart rule is the whole point.
+
+DM REGULATED to join · $75/month</div>
+    <button class="copy-btn" onclick="copyText('s10', this)"><span class="copy-icon">⊕</span> Copy Story 10</button>
+  </div>
+</div>
+
+<!-- WED 6pm -->
+<div class="slot-section" id="slot-wed-pm">
+  <div class="slot-header">
+    <div class="slot-title">Story 11 · Black Screen
+      <span class="action-tag">DELETE ALL → BLACK SCREEN TEXT ONLY</span>
+    </div>
+    <div class="delete-badge">🗑 DELETE<br>FIRST</div>
+  </div>
+
+  <div class="instruction-block">
+    <strong>How to make the black screen:</strong> Screen record for 3 seconds → stop → upload to stories → Draw tool → black → press and hold to fill screen → add white text on top.
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 11 · Black Screen Quote</div>
+    <div class="story-body" id="s11">"It is no measure of health to be well adjusted to a profoundly sick society."
+
+— Krishnamurti
+
+I built 75HEALED because I believed him.
+
+DM REGULATED</div>
+    <button class="copy-btn" onclick="copyText('s11', this)"><span class="copy-icon">⊕</span> Copy Story 11</button>
+  </div>
+</div>
+
+<!-- THU 9:30am -->
+<div class="slot-section" id="slot-thu-am">
+  <div class="slot-header">
+    <div class="slot-title">Stories 12–13 · Before/After
+      <span class="action-tag">DELETE ALL → POST TOGETHER → 12-HOUR TOGGLE</span>
+    </div>
+    <div class="delete-badge">🗑 DELETE<br>FIRST</div>
+  </div>
+
+  <div class="instruction-block">
+    <strong>The toggle hack:</strong> People swipe back and forth between before/after. Higher watch time = more reach. No captions needed — let the contrast speak.
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 12 · Before</div>
+    <div class="story-body" id="s12">Photo/image representing:
+
+Fragmentation. Overwhelm. The dysregulated state.
+
+A cluttered phone screen, inbox full, exhaustion.
+
+No caption needed.
+<span class="swipe">[Swipe →]</span></div>
+    <button class="copy-btn" onclick="copyText('s12', this)"><span class="copy-icon">⊕</span> Copy Story 12 Caption</button>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 13 · After</div>
+    <div class="story-body" id="s13">Photo/image representing:
+
+Clarity. Presence. Creation mode.
+
+A clean morning, a guitar, a walk in nature.
+
+No caption needed. Let people feel the gap.</div>
+    <button class="copy-btn" onclick="copyText('s13', this)"><span class="copy-icon">⊕</span> Copy Story 13 Caption</button>
+  </div>
+</div>
+
+<!-- FRI 9:30am -->
+<div class="slot-section" id="slot-fri-am">
+  <div class="slot-header">
+    <div class="slot-title">Story 14 · Vulnerable Close
+      <span class="action-tag">END THE WEEK REAL · HIGHEST-CONVERTING INDIRECT CTA</span>
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-label">Story 14 · Weekly Honest Update</div>
+    <div class="story-body" id="s14">This week I:
+
+Woke up at 2:30am and felt like I was shrinking.
+
+Went for a walk anyway.
+
+Had a song come through because the backend was handled and there was finally space for it.
+
+Watched a kids lacrosse game.
+
+Got my steps in.
+
+The practices don't care how you feel when you show up.
+
+They just work.
+
+Week [X] of 75. Compounding.
+
+#75healed 75healed.com</div>
+    <button class="copy-btn" onclick="copyText('s14', this)"><span class="copy-icon">⊕</span> Copy Story 14</button>
+  </div>
+</div>
+
+<!-- FOOTER NAV -->
+<div class="footer">
+  <div class="footer-slot active" onclick="showSlot('mon-am')"><span class="f-day">MON</span><span class="f-time">9:30a</span></div>
+  <div class="footer-slot" onclick="showSlot('mon-pm')"><span class="f-day">MON</span><span class="f-time">6pm</span></div>
+  <div class="footer-slot" onclick="showSlot('tue-am')"><span class="f-day">TUE</span><span class="f-time">9:30a</span></div>
+  <div class="footer-slot" onclick="showSlot('wed-am')"><span class="f-day">WED</span><span class="f-time">9:30a</span></div>
+  <div class="footer-slot" onclick="showSlot('wed-pm')"><span class="f-day">WED</span><span class="f-time">6pm</span></div>
+  <div class="footer-slot" onclick="showSlot('thu-am')"><span class="f-day">THU</span><span class="f-time">9:30a</span></div>
+  <div class="footer-slot" onclick="showSlot('fri-am')"><span class="f-day">FRI</span><span class="f-time">9:30a</span></div>
+</div>
+
+<script>
+function showSlot(id) {
+  document.querySelectorAll('.slot-section').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.slot-tab').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.footer-slot').forEach(el => el.classList.remove('active'));
+  document.getElementById('slot-' + id).classList.add('active');
+  const tabs = document.querySelectorAll('.slot-tab');
+  const ftabs = document.querySelectorAll('.footer-slot');
+  const order = ['mon-am','mon-pm','tue-am','wed-am','wed-pm','thu-am','fri-am'];
+  const i = order.indexOf(id);
+  if (tabs[i]) tabs[i].classList.add('active');
+  if (ftabs[i]) ftabs[i].classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function getCleanText(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return '';
+  // Clone and remove swipe spans
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('.swipe').forEach(s => s.remove());
+  return clone.innerText.trim();
+}
+
+function copyText(elementId, btn) {
+  const text = getCleanText(elementId);
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span>✓</span> Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // Fallback for older iOS
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.innerHTML = '<span>✓</span> Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = '<span class="copy-icon">⊕</span> Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyRaw(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span>✓</span> Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>
